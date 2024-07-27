@@ -1,0 +1,35 @@
+current directory: C:/source/CHaser/lib/ruby/3.2.0/gems/io-event-1.6.5/ext
+C:/Ruby32-x64/bin/ruby.exe -I C:/Ruby32-x64/lib/ruby/3.2.0 extconf.rb
+checking for rb_ext_ractor_safe()... yes
+checking for &rb_fiber_transfer()... yes
+checking for -luring... no
+checking for sys/epoll.h... no
+checking for sys/event.h... no
+checking for sys/wait.h... no
+checking for sys/eventfd.h... no
+checking for rb_io_descriptor()... yes
+checking for &rb_process_status_wait()... no
+checking for rb_fiber_current()... yes
+checking for &rb_fiber_raise()... yes
+checking for epoll_pwait2()... no
+checking for ruby/io/buffer.h... yes
+creating extconf.h
+creating Makefile
+
+current directory: C:/source/CHaser/lib/ruby/3.2.0/gems/io-event-1.6.5/ext
+make DESTDIR\= sitearchdir\=./.gem.20240730-11256-udrvc8 sitelibdir\=./.gem.20240730-11256-udrvc8 clean
+
+current directory: C:/source/CHaser/lib/ruby/3.2.0/gems/io-event-1.6.5/ext
+make DESTDIR\= sitearchdir\=./.gem.20240730-11256-udrvc8 sitelibdir\=./.gem.20240730-11256-udrvc8
+generating IO_Event-x64-mingw-ucrt.def
+compiling ./io/event/event.c
+compiling ./io/event/selector/selector.c
+compiling ./io/event/interrupt.c
+linking shared-object IO_Event.so
+
+current directory: C:/source/CHaser/lib/ruby/3.2.0/gems/io-event-1.6.5/ext
+make DESTDIR\= sitearchdir\=./.gem.20240730-11256-udrvc8 sitelibdir\=./.gem.20240730-11256-udrvc8 install
+/usr/bin/install -c -m 0755 IO_Event.so ./.gem.20240730-11256-udrvc8
+
+current directory: C:/source/CHaser/lib/ruby/3.2.0/gems/io-event-1.6.5/ext
+make DESTDIR\= sitearchdir\=./.gem.20240730-11256-udrvc8 sitelibdir\=./.gem.20240730-11256-udrvc8 clean
