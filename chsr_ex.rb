@@ -273,14 +273,16 @@ end
 printf("\e[2J") # 画面クリア
 disp(@map)  # 画面表示
 
-puts "IP address:" + my_address # IPアドレスを表示
+cp_my_address = my_address
+
+puts "IP address:" + cp_my_address # IPアドレスを表示
 puts "接続を待っています。"
 
 # マルチスレッドで接続待機
 2.times do |i|
   th[i] = Thread.new(i) { |i|
     # ポートを開放
-    @s[i] = TCPServer.open( port[i] )
+    @s[i] = TCPServer.open(cp_my_address, port[i] )
     @s[i].set_encoding 'utf-8'
 
     # 接続待ち
