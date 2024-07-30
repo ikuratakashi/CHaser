@@ -82,10 +82,16 @@ https://github.com/t-akisato/CHaser-Server
 git config commit.template commit_temp.txt
 ```
 
-- Emailとユーザ名の設定
+- Emailとユーザ名の設定(全体に有効)
 ```sh
 git config --global user.name "あなたの名前"
 git config --global user.email "あなたのメールアドレス"
+```
+
+- Emailとユーザ名の設定(ローカルに有効)
+```sh
+git config --local user.name "あなたの名前"
+git config --local user.email "あなたのメールアドレス"
 ```
 
 - wingetとは
