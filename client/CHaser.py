@@ -148,3 +148,6 @@ class Client:
 
     def put_down(self):
         return self.__order("pd")
+
+    def serverStatusReport(self):
+        return self.__str_send("ssr")

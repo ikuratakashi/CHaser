@@ -33,6 +33,9 @@ require 'socket'
 require 'pp'
 require 'optparse'
 
+require 'async'
+require 'async/io'
+
 # 接続情報
 host = "localhost"
 port = [2009,2010]
@@ -492,7 +495,7 @@ $stdin.gets
     #*****************
     # 試合中のmap表示
     #*****************
-    #disp(@map)
+    disp(@map)
     #*****************
 
     #printf("\e[0J")

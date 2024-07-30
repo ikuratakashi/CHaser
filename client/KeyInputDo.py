@@ -1,5 +1,11 @@
-import CHaser # 同じディレクトリに CHaser.py がある前提
+import sys
+sys.path.append('lib\python\colorama')
+import colorama
+from colorama import Fore, Back, Style
+import signal
+import sys
 
+import CHaser
 
 #定数　行動
 MV_0 = "5"  #待機
@@ -22,11 +28,21 @@ BLC = 2 #ブロック
 ITM = 3 #アイテム
 
 # ANSIエスケープシーケンス
-R = "\033[91m"
-G = "\033[92m"
-Y = "\033[93m"
-B = "\033[94m"
-RE = "\033[0m"
+colorama.init()
+R = Fore.RED
+G = Fore.GREEN
+Y = Fore.YELLOW
+B = Fore.BLUE
+RE = Style.RESET_ALL
+
+def signal_handler(sig, frame):
+    """
+    Ctrl+Cが押された時の処理
+    """
+    print(f"{R}\nCtrl+Cが押されました。プログラムを終了します。")
+    colorama.deinit()
+    sys.exit(0)
+signal.signal(signal.SIGINT, signal_handler)
 
 def IsBlock(pValue,pNext):
     """
@@ -113,7 +129,7 @@ def main():
             elif InpVal == MV_N :
                 IsNextStep = True
             else :
-                print("入力値が不正です!!!")
+                print(f"{R}入力値が不正です!!!{RE}")
                 continue
 
             BefInpVal = InpVal
