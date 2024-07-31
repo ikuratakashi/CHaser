@@ -33,8 +33,8 @@ require 'socket'
 require 'pp'
 require 'optparse'
 
-require 'async'
-require 'async/io'
+#require 'async'
+#require 'async/io'
 
 # 接続情報
 host = "localhost"
