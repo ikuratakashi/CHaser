@@ -17,3 +17,15 @@ HOTで起動する場合
 ```sh
  ./run.sh h
 ```
+
+## 通常起動方法
+
+COOLで起動する場合
+```sh
+ KeyInputDo.py -c c
+```
+
+HOTで起動する場合
+```sh
+ KeyInputDo.py -c h
+```
