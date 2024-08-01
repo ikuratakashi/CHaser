@@ -79,8 +79,13 @@ This software is released under the MIT License, see LICENSE.
 （このソフトウェアは、MITライセンスのもとで公開されています。LICENSEを見てください。） 
 
 ## 大元のリポジトリ
-
 https://github.com/t-akisato/CHaser-Server
+
+## U-16プログラミングコンテスト上越妙高
+http://joetsu.u16procon.org
+
+## 資料ダウンロード・リンク集
+http://joetsu.u16procon.org/links
 
 ## その他
 
@@ -154,6 +159,7 @@ netstat -ano | findstr :2009
   TCP         [::]:2009              [::]:0                 LISTENING       9184
 ```
 以下の部分は、IPv6のIPアドレスに対して2009のポートが開いていることになる
+※WindowsでIPv6を無効にしても以下のように表示される。。。なぜ！？
 ```
 [::]:2009
 ```
