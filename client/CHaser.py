@@ -4,24 +4,60 @@ import os
 import getopt
 import sys
 
+#定数 起動パラメータ
+SERVER_IP = "192.168.3.16"
+LISN_PORT_C = "2009"
+LISN_PORT_H = "2010"
+USER_NAME_C = "COOL"
+USER_NAME_H = "HOT"
 
 class Client:
+
+    #CoolかHotか
+    CH_COOL = 0
+    CH_HOT = 1
+    CoolHot = CH_COOL
+
+    def ChkCoolHot(self) -> int:
+        if self.port == "2009":
+            self.CoolHot = self.CH_COOL
+        else:
+            self.CoolHot = self.CH_HOT
+        
+        return self.CoolHot
+
     def __init__(self):
         if len(sys.argv) > 1:
             try:
-                optlist, args = getopt.getopt(sys.argv[1:], 'h:n:p:')
+                short_options = 'h:n:p:c:'
+                long_options = ['host=', 'name=', 'port=', 'coolorhot=']                
+                optlist, args = getopt.getopt(sys.argv[1:], short_options,long_options)
             except getopt.GetoptError as err:
                 print(err)  # will print something like "option -a not recognized"
                 sys.exit(2)
             for o, a in optlist:
-                if o == '-n':
+                if o in ('-n','--name'):
                     self.name = a
-                elif o == '-p':
+                elif o in ('-p','--port'):
                     self.port = a
-                elif o == '-h':
+                elif o in ('-h','--host'):
                     self.host = a
+                elif o in ('-c','--coolorhot'):
+                    if a == 'c':
+                        self.name = USER_NAME_C
+                        self.port = LISN_PORT_C
+                        self.host = SERVER_IP
+                        break
+                    elif a == 'h':
+                        self.name = USER_NAME_H
+                        self.port = LISN_PORT_H
+                        self.host = SERVER_IP
+                        break
+                    else:
+                        assert False, f"unhandled option: {a}"
+                        break
                 else:
-                    assert False, "unhandled option"
+                    assert False, f"unhandled option: {o}"
         else:
             self.port = input("ポート番号を入力してください → ")
             self.name = input("ユーザー名を入力してください → ")[:15]

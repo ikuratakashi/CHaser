@@ -33,6 +33,8 @@ R = Fore.RED
 G = Fore.GREEN
 Y = Fore.YELLOW
 B = Fore.BLUE
+C = Fore.CYAN
+M = Fore.MAGENTA
 RE = Style.RESET_ALL
 
 def signal_handler(sig, frame):
@@ -80,21 +82,157 @@ def IsInt(s):
         return True
     except ValueError:
         return False
+
+class clsPlayerData:
+    """
+    プレイヤーのクラス
+    """    
+
+    # 向いている方向
+    DR_DF = 0   #初期値
+    DR_TP = 1   #上
+    DR_DW = 8   #下
+    DR_LF = 3   #左
+    DR_RI = 2   #右
+
+    direction = DR_DF   #現在の方向
+
+    # CoolかHot
+    CH_COOL = 0
+    CH_HOT = 1
+    CoolHot = CH_COOL
+
+    def __init__(self,pCool_Hot:int):
+        """
+        コンストラクタ
+
+        Args:
+            pCool_Hot (int): CoolかHotか
+
+        """    
+        self.CoolHot = pCool_Hot
+        return
+
+    def setDirection(self,pDf):
+        """
+        プレイヤーの方向を設定する
+        """    
+        self.direction = pDf
+        return
+
+class clsAreaTable:
+    """
+    周辺の情報を退避するクラス
+    """    
+    cols = 0
+    rows = 0
+    arealist = []
+    
+    A_PLAYER = 1
+    A_BLOCK = 2
+    A_ITEM = 3
+
+    #周辺情報のプレイヤーの表示モード
+    P_3x3 = 1   #3x3の周辺情報
+    P_REAL = 2  #フィールド全体
+    PrintAreaPutPlayerMode = P_3x3
+
+    def __init__(self,pCols:int,pRows:int):
+        """
+        コンストラクタ
+        """    
+        self.cols = pCols
+        self.rows = pRows
+        return
+    
+    def SetAreaList(self,pArea:list):
+        """
+        周辺の情報を設定する
+        """
+        self.arealist = []    
+        self.arealist = [[None for _ in range(self.cols)] for _ in range(self.rows)]
+        col = 0
+        row = 0
+        for field in pArea:
+            if row <= self.rows - 1:
+                self.arealist[col][row] = field
+                row += 1
+                if row >= self.rows:
+                    col += 1
+                    row = 0
+            else:
+                break
+        return
+    
+    def PrintArea(self,pPData:clsPlayerData):
+        """
+        周辺の状態をコンソールに出力する
+        """
+        curCol = 0
+        curRow = 0
+        print("-- 周辺マップ --")
+        for row in self.arealist:
+            for field in row:
+
+                # 地図の表示モードによってプレイヤーの位置の表示方法を設定する
+                if self.PrintAreaPutPlayerMode == self.P_3x3:
+                    if curCol == 1 and curRow == 1:
+                        field = self.A_PLAYER
+
+                # プレイヤー
+                if field == self.A_PLAYER:
+
+                    Coler = 0
+                    if pPData.CoolHot == clsPlayerData.CH_COOL:
+                        Coler = C
+                    else:
+                        Coler = M
+
+                    if pPData.direction == clsPlayerData.DR_TP:
+                        print(f"{Coler}^ {RE}",end="")
+                    elif pPData.direction == clsPlayerData.DR_DW:
+                        print(f"{Coler}D {RE}",end="")
+                    elif pPData.direction == clsPlayerData.DR_LF:
+                        print(f"{Coler}< {RE}",end="")
+                    elif pPData.direction == clsPlayerData.DR_RI:
+                        print(f"{Coler}> {RE}",end="")
+                    else:
+                        print(f"{Coler}+ {RE}",end="")
+                elif field == self.A_BLOCK:
+                        print("# ",end="")
+                elif field == self.A_ITEM:
+                        print("$ ",end="")
+                else:
+                    print("  ",end="")
+            
+                curRow += 1
+
+            #改行
+            print()
+
+            curCol += 1
+            curRow = 0
     
 def main():
     
     value = [] # フィールド情報を保存するリスト
     client = CHaser.Client() # サーバーと通信するためのインスタンス
 
+    AreaTable = clsAreaTable(3,3)
+    PlayerData = clsPlayerData(client.ChkCoolHot())
+
     BefInpVal = None
     
     while(True):
 
         value = client.get_ready()
-        print(f"{G}*自分のターン*************{RE}")
 
+        #周辺の情報を表示
+        AreaTable.SetAreaList(value)
+        AreaTable.PrintArea(PlayerData)
+        
+        print(f"{G}*自分のターン{RE}")
         IsNextStep = False
-
         while(True):
 
             #キー入力
@@ -118,14 +256,19 @@ def main():
             if InpVal == MV_0 :
                 #待機
                 client.search_up()
+                PlayerData.direction = clsPlayerData.DR_DF
             elif InpVal == MV_L :
-                client.walk_left()
+                value = client.walk_left()
+                PlayerData.direction = clsPlayerData.DR_LF
             elif InpVal == MV_R :
-                client.walk_right()
+                value = client.walk_right()
+                PlayerData.direction = clsPlayerData.DR_RI
             elif InpVal == MV_U :
-                client.walk_up()
+                value = client.walk_up()
+                PlayerData.direction = clsPlayerData.DR_TP
             elif InpVal == MV_D :
-                client.walk_down()
+                value = client.walk_down()
+                PlayerData.direction = clsPlayerData.DR_DW
             elif InpVal == MV_N :
                 IsNextStep = True
             else :
@@ -159,7 +302,12 @@ def main():
                     continue
 
                 break
-        print(f"{B}*相手のターン*************{RE}")
+
+        #周辺の情報を表示
+        AreaTable.SetAreaList(value)
+        AreaTable.PrintArea(PlayerData)
+        
+        print(f"{B}*相手のターン{RE}")
 
 if __name__ == "__main__":
     main()

@@ -12,11 +12,11 @@
 case $1 in
   c)
     echo "COLL Run"
-    python KeyInputDo.py -n COOL -p 2009 -h 192.168.3.15
+    python KeyInputDo.py -n COOL -p 2009 -h 192.168.3.16
     ;;
   h)
     echo "HOT Run"
-    python KeyInputDo.py -n HOT -p 2010 -h 192.168.3.15
+    python KeyInputDo.py -n HOT -p 2010 -h 192.168.3.16
     ;;
   *)
     echo "引数が設定されていません: $1"
