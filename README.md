@@ -5,6 +5,10 @@ chsr_ex.rb
 
 実行方法の例
 ```sh
+bundle exec ruby chsr_ex.rb
+```
+もしくは
+```sh
 ruby chsr_ex.rb
 ```
 詳しくは[起動時のパラメータ]を参照してください。
