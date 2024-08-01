@@ -191,7 +191,7 @@ class clsAreaTable:
                     if pPData.direction == clsPlayerData.DR_TP:
                         print(f"{Coler}^ {RE}",end="")
                     elif pPData.direction == clsPlayerData.DR_DW:
-                        print(f"{Coler}D {RE}",end="")
+                        print(f"{Coler}v {RE}",end="")
                     elif pPData.direction == clsPlayerData.DR_LF:
                         print(f"{Coler}< {RE}",end="")
                     elif pPData.direction == clsPlayerData.DR_RI:
