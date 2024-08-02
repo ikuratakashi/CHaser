@@ -145,6 +145,12 @@ class clsAreaTable:
         self.rows = pRows
         return
     
+    def AddAreaList(self,pArea:list):
+        """
+        周辺の情報を設定する
+        """
+        return
+    
     def SetAreaList(self,pArea:list):
         """
         周辺の情報を設定する
