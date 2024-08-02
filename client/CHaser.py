@@ -18,13 +18,24 @@ class Client:
     CH_HOT = 1
     CoolHot = CH_COOL
 
-    def ChkCoolHot(self) -> int:
+    def ChkCoolHot(self,pGetEnemyFlag:bool) -> int:
+        """
+        @bool (bool): 敵側の種類を取得するかどうか
+        """
         if self.port == "2009":
             self.CoolHot = self.CH_COOL
         else:
             self.CoolHot = self.CH_HOT
-        
-        return self.CoolHot
+            
+        result = self.CoolHot
+
+        if pGetEnemyFlag == True:
+            if self.CoolHot == self.CH_HOT:
+                result = self.CH_COOL
+            else:
+                result = self.CH_HOT
+
+        return result
 
     def __init__(self):
         if len(sys.argv) > 1:

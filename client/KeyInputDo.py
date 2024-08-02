@@ -4,8 +4,22 @@ import colorama
 from colorama import Fore, Back, Style
 import signal
 import sys
-
+import math
 import CHaser
+import random
+
+"""""
+ # 起動方法
+
+ ・Cool
+   python KeyInputDo.py -c c
+
+ ・Hot
+   python KeyInputDo.py -c h
+
+  ※接続情報は、CHaser.pyに記載してあります。探してみてね。
+
+"""""
 
 #定数　行動
 MV_0 = "5"  #待機
@@ -36,6 +50,62 @@ B = Fore.BLUE
 C = Fore.CYAN
 M = Fore.MAGENTA
 RE = Style.RESET_ALL
+
+class clsEtcValue:
+    """
+    その他定数
+    """
+    PRINT_LINE_NOMAL = "--------------------------------------------------------------------"
+    PRINT_LINE_ASTA  = "********************************************************************"
+
+class clsItem:
+    """
+    アイテムの定数
+    """
+    NOMAL = 3    #得点
+    WEPON = 400  #武器
+
+class clsAction:
+    """
+    動作の定数
+    """
+    MV_WAITE = "MV_WAITE" # 移動：動かない
+    # 移動：左
+    MV_LEFT = "MV_LEFT"
+    # 移動：下
+    MV_DOWN = "MV_DOWN"
+    # 移動：上
+    MV_TOP = "MV_TOP"
+    # 移動：右
+    MV_RIGHT = "MV_RIGHT"
+    # 見る：上
+    LO_UP = "LO_UP"
+    # 見る：左
+    LO_LEFT = "LO_LEFT"
+    # 見る：右
+    LO_RIGHT = "LO_RIGHT"
+    # 見る：下
+    LO_DOWN = "LO_DOWN"
+    # 検索：上
+    SR_UP = "SR_UP"
+    # 検索：左
+    SR_LEFT = "SR_LEFT"
+    # 検索：右
+    SR_RIGHT = "SR_RIGHT"
+    # 検索：下
+    SR_DOWN = "SR_DOWN"
+    # 置く：上
+    PT_UP = "PT_UP"
+    # 置く：左
+    PT_LEFT = "PT_LEFT"
+    # 置く：右
+    PT_RIGHT = "PT_RIGHT"
+    # 置く：下
+    PT_DOWN = "PT_DOWN"
+
+    #アクション
+    AC_BEFOR = "AC_BEFOR"
+    AC_AFTER = "AC_AFTER"
 
 def signal_handler(sig, frame):
     """
@@ -83,6 +153,19 @@ def IsInt(s):
     except ValueError:
         return False
 
+class clslogRowCol:
+    """
+    ログ情報
+    """    
+    col = 0
+    row = 0
+    Action:clsAction
+    def __init__(self,pAction:clsAction,pCol:int,pRow:int):
+        self.col = pCol
+        self.row = pRow
+        self.Action = pAction
+
+
 class clsPlayerData:
     """
     プレイヤーのクラス
@@ -97,10 +180,76 @@ class clsPlayerData:
 
     direction = DR_DF   #現在の方向
 
+    #プレイヤーの位置(当プログラムの内部的での位置)
+    col = 0
+    row = 0
+    logColRow = []
+
     # CoolかHot
     CH_COOL = 0
     CH_HOT = 1
     CoolHot = CH_COOL
+
+    # coolとhotの色
+    ColorCool = Fore.CYAN
+    ColorHot = Fore.MAGENTA
+
+    # プレイヤーマーク
+    MarkCool = "C"
+    MarkHot = "H"
+
+    #プレイヤーの色
+    PlayerColor = ColorCool
+
+    #プレイヤーマーク
+    PlayerMark = MarkCool
+
+    # Wepon
+    class clsWepon:
+        # Wepon種類
+        BOM = "Bom"
+        CHAFF = "Decoy"
+        Eye = "Eye"
+        BLOCK = "BLOCK"
+
+        #値
+        Type = ""
+        Name = ""
+        Cnt = 0
+
+        def __init__(self,pType:str,pName:str,pCnt:int):
+            if pName == "":
+                self.Name = pType
+            else:
+                self.Name = pName
+
+            self.Type = pType
+            self.Cnt = pCnt
+        
+        def showStr(self):
+            return f"{self.Name}({self.Cnt})"
+        
+    # ランダムセットアイテム
+    option = [clsWepon(clsWepon.BOM,"???",1),
+              clsWepon(clsWepon.CHAFF,"?????",1),
+              clsWepon(clsWepon.Eye,"??????",1)]
+    ramdomNo = random.randint(0, 2)
+
+    # 武器の設定
+    Wepon = [clsWepon(clsWepon.BOM,"",1),
+             clsWepon(clsWepon.CHAFF,"",2),
+             clsWepon(clsWepon.Eye,"",5),
+             option[ramdomNo]]
+
+    # HP
+    HP = 100
+
+    # Exp
+    Exp = 0
+    NextExp = 100
+
+    # Level
+    Level = 1
 
     def __init__(self,pCool_Hot:int):
         """
@@ -109,16 +258,165 @@ class clsPlayerData:
         Args:
             pCool_Hot (int): CoolかHotか
 
-        """    
-        self.CoolHot = pCool_Hot
-        return
+        """
 
-    def setDirection(self,pDf):
+        #CoolかHotかを設定    
+        self.CoolHot = pCool_Hot
+
+        #プレイヤーの色を設定
+        if self.CoolHot == self.CH_COOL:
+            self.PlayerColor = self.ColorCool
+            self.PlayerMark = self.MarkCool
+        else:
+            self.PlayerColor = self.ColorHot
+            self.PlayerMark = self.MarkHot
+
+        return
+    
+    def ShowStatus(self):
+        """
+        ステータスの文字列を作成
+        """
+        WeponStrList = []
+        for Wepon in self.Wepon:
+            WeponStrList.append(Wepon.showStr())
+        WeponStr = ' / '.join(WeponStrList)
+
+        print(f"Level:{self.Level} / HP:{self.HP} / Exp:{self.Exp}/{self.NextExp}")
+        print(f"Wepon:[{WeponStr}]")
+
+        return
+    
+    def GetItem(self,pItem:clsItem):
+        """
+        アイテムの保存
+        """
+        self.cntItem.append(pItem)
+
+    def setDirection(self,pDr):
         """
         プレイヤーの方向を設定する
         """    
-        self.direction = pDf
+        self.direction = pDr
         return
+    
+    def setPosition(self,pCol:int,pRow:int):
+        """
+        プレイヤーの位置を設定する
+        """    
+        self.col = pCol
+        self.row = pRow
+        return
+    
+    def DoActionPlayer(self,pAction:clsAction,pAreaList:list):
+        """
+        移動したときのプレイヤーの設定
+        """
+
+        #履歴を残す(後で何かにつかう)
+        self.logColRow.append(clslogRowCol(pAction,self.col,self.row))
+
+        if (pAction == clsAction.MV_WAITE or
+            pAction == clsAction.MV_TOP or 
+            pAction == clsAction.MV_DOWN or
+            pAction == clsAction.MV_LEFT or
+            pAction == clsAction.MV_RIGHT):
+            # 移動
+
+            Dr = clsPlayerData.DR_DF
+            if pAction == clsAction.MV_WAITE:
+                Dr = clsPlayerData.DR_DF
+            elif pAction == clsAction.MV_TOP:
+                Dr = clsPlayerData.DR_TP
+            elif pAction == clsAction.MV_DOWN:
+                Dr = clsPlayerData.DR_DW
+            elif pAction == clsAction.MV_LEFT:
+                Dr = clsPlayerData.DR_LF
+            elif pAction == clsAction.MV_RIGHT:
+                Dr = clsPlayerData.DR_RI
+
+            # 方向
+            self.setDirection(Dr)
+
+            # 位置
+            if Dr == clsPlayerData.DR_DF :
+                #待機
+                pass
+            elif Dr == clsPlayerData.DR_LF :
+                self.col -= 1
+            elif Dr == clsPlayerData.DR_RI :
+                self.col += 1
+            elif Dr == clsPlayerData.DR_TP :
+                self.row -= 1
+            elif Dr == clsPlayerData.DR_DW :
+                self.row += 1         
+
+class clsGameMaster:
+    """
+    ゲームマスター（ゲームの管理）のクラス
+    """  
+    # プレイヤーの得点  
+    MePoint = 0
+    EnemyPoint = 0
+
+    # プレイヤー情報
+    MePlayer:clsPlayerData
+    EnemyPlayer:clsPlayerData
+
+    def AddMePoint(self,pItem:clsItem):
+        """
+        自分の点数加算
+        """    
+        if pItem == clsItem.NOMAL:
+            self.MePoint = 1
+    
+    def ShowGameStatus(self):
+        """
+        ゲームのステータス表示
+        """
+        print(f"{clsEtcValue.PRINT_LINE_NOMAL}") 
+        self.MePlayer.ShowStatus()
+        print(f"{clsEtcValue.PRINT_LINE_NOMAL}") 
+        return
+    
+    def GetPlayerColor(self):
+        if self.MePlayer.CoolHot == clsPlayerData.CH_COOL:
+            return clsPlayerData.CH_HOT
+
+class clsAreaTalbeEx:
+    """
+    周辺の情報を退避するクラス
+    """ 
+    cols = 31     #必ず奇数を設定
+    rows = cols
+    player = None
+    arealist = []
+    def __init__(self,pSize:int,pPlayer:clsPlayerData):
+        """
+        コンストラクタ
+
+            ・退避するリストのサイズを設定
+            ・プレイヤーの初期位置を設定
+
+        Args:
+            pSize (int): 退避する領域の列数と行数(必ず奇数)
+            pPlayer (clsPlayerData): プレイヤー情報
+        """    
+        self.cols = pSize
+        self.rows = pSize
+        self.player = pPlayer
+        self.arealist = [[None for _ in range(self.cols)] for _ in range(self.rows)]
+        self.player.setPosition(math.ceil(self.cols / 2) - 1,math.ceil(self.rows / 2) - 1)
+
+    def addArea(self,pArea:list,pAction:int):
+        """
+        周辺情報の追加
+        Args:
+            pArea (list): 追加する周辺情報
+            pAction (int): 周辺情報を取得した時の動作
+        """    
+
+
 
 class clsAreaTable:
     """
@@ -128,7 +426,8 @@ class clsAreaTable:
     rows = 0
     arealist = []
     
-    A_PLAYER = 1
+    A_PLAYER_ME = 10
+    A_PLAYER_EM = 1
     A_BLOCK = 2
     A_ITEM = 3
 
@@ -170,46 +469,52 @@ class clsAreaTable:
                 break
         return
     
-    def PrintArea(self,pPData:clsPlayerData):
+    def PrintArea(self,pPlayerData:clsPlayerData,pEnemyPlayerData:clsPlayerData,pMode:clsAction):
         """
         周辺の状態をコンソールに出力する
         """
         curCol = 0
         curRow = 0
-        print("-- 周辺マップ --")
+
+        print(f"{clsEtcValue.PRINT_LINE_NOMAL}") 
+        if pMode == clsAction.AC_BEFOR:
+            print("周辺マップ [行動前]")
+        elif pMode == clsAction.AC_AFTER:
+            print("周辺マップ [行動後]")
+        else:
+            print("周辺マップ")
+        print(f"{clsEtcValue.PRINT_LINE_NOMAL}") 
+
         for row in self.arealist:
             for field in row:
 
                 # 地図の表示モードによってプレイヤーの位置の表示方法を設定する
                 if self.PrintAreaPutPlayerMode == self.P_3x3:
                     if curCol == 1 and curRow == 1:
-                        field = self.A_PLAYER
+                        field = self.A_PLAYER_ME
 
                 # プレイヤー
-                if field == self.A_PLAYER:
-
-                    Coler = 0
-                    if pPData.CoolHot == clsPlayerData.CH_COOL:
-                        Coler = C
-                    else:
-                        Coler = M
-
-                    if pPData.direction == clsPlayerData.DR_TP:
+                if field == self.A_PLAYER_ME:
+                    Coler = pPlayerData.PlayerColor
+                    if pPlayerData.direction == clsPlayerData.DR_TP:
                         print(f"{Coler}^ {RE}",end="")
-                    elif pPData.direction == clsPlayerData.DR_DW:
+                    elif pPlayerData.direction == clsPlayerData.DR_DW:
                         print(f"{Coler}v {RE}",end="")
-                    elif pPData.direction == clsPlayerData.DR_LF:
+                    elif pPlayerData.direction == clsPlayerData.DR_LF:
                         print(f"{Coler}< {RE}",end="")
-                    elif pPData.direction == clsPlayerData.DR_RI:
+                    elif pPlayerData.direction == clsPlayerData.DR_RI:
                         print(f"{Coler}> {RE}",end="")
                     else:
                         print(f"{Coler}+ {RE}",end="")
                 elif field == self.A_BLOCK:
                         print("# ",end="")
                 elif field == self.A_ITEM:
-                        print("$ ",end="")
+                        print(f"{Y}$ {RE}",end="")
+                elif field == self.A_PLAYER_EM:
+                    #敵の表示
+                    print(f"{pEnemyPlayerData.PlayerColor}{pEnemyPlayerData.PlayerMark} {RE}",end="")
                 else:
-                    print("  ",end="")
+                    print(". ",end="")
             
                 curRow += 1
 
@@ -224,20 +529,39 @@ def main():
     value = [] # フィールド情報を保存するリスト
     client = CHaser.Client() # サーバーと通信するためのインスタンス
 
+    GameMaster = clsGameMaster()
     AreaTable = clsAreaTable(3,3)
-    PlayerData = clsPlayerData(client.ChkCoolHot())
+
+    PlayerData = clsPlayerData(client.ChkCoolHot(False))
+    EnemyPlayerData = clsPlayerData(client.ChkCoolHot(True))
+
+    GameMaster.MePlayer = PlayerData
+    GameMaster.EnemyPlayer = EnemyPlayerData
+
+    AreaTableEx = clsAreaTalbeEx(101,PlayerData)
 
     BefInpVal = None
+
+    cntTurn = 0
     
     while(True):
 
+        cntTurn += 1
+
         value = client.get_ready()
 
-        #周辺の情報を表示
+        # タイトルの表示
+        print(f"{PlayerData.PlayerColor}{clsEtcValue.PRINT_LINE_ASTA}{RE}") 
+        print(f"{PlayerData.PlayerColor} 自分のターン[Turn:{cntTurn}]{RE}")
+        #print(f"{PlayerData.PlayerColor}{clsEtcValue.PRINT_LINE_ASTA}{RE}") 
+
+        # 周辺の情報を表示
         AreaTable.SetAreaList(value)
-        AreaTable.PrintArea(PlayerData)
-        
-        print(f"{G}*自分のターン{RE}")
+        AreaTable.PrintArea(PlayerData,EnemyPlayerData,clsAction.AC_BEFOR)
+
+        # その他ステータスの表示
+        GameMaster.ShowGameStatus()
+
         IsNextStep = False
         while(True):
 
@@ -261,20 +585,20 @@ def main():
             #移動
             if InpVal == MV_0 :
                 #待機
-                client.search_up()
-                PlayerData.direction = clsPlayerData.DR_DF
+                valueTmp = client.search_up()
+                PlayerData.DoActionPlayer(clsAction.MV_WAITE,valueTmp)
             elif InpVal == MV_L :
                 value = client.walk_left()
-                PlayerData.direction = clsPlayerData.DR_LF
+                PlayerData.DoActionPlayer(clsAction.MV_LEFT,value)
             elif InpVal == MV_R :
                 value = client.walk_right()
-                PlayerData.direction = clsPlayerData.DR_RI
+                PlayerData.DoActionPlayer(clsAction.MV_RIGHT,value)
             elif InpVal == MV_U :
                 value = client.walk_up()
-                PlayerData.direction = clsPlayerData.DR_TP
+                PlayerData.DoActionPlayer(clsAction.MV_TOP,value)
             elif InpVal == MV_D :
                 value = client.walk_down()
-                PlayerData.direction = clsPlayerData.DR_DW
+                PlayerData.DoActionPlayer(clsAction.MV_DOWN,value)
             elif InpVal == MV_N :
                 IsNextStep = True
             else :
@@ -295,15 +619,20 @@ def main():
 
                 if InpVal == MV_0 : 
                     #待機
-                    client.search_up()
+                    value = client.search_up()
+                    PlayerData.DoActionPlayer(clsAction.SR_UP,value)
                 elif InpVal == MV_L :
-                    client.put_left()
+                    value = client.put_left()
+                    PlayerData.DoActionPlayer(clsAction.PT_LEFT,value)
                 elif InpVal == MV_R :
-                    client.put_right()
+                    value = client.put_right()
+                    PlayerData.DoActionPlayer(clsAction.PT_RIGHT,value)
                 elif InpVal == MV_U :
-                    client.put_up()
+                    value = client.put_up()
+                    PlayerData.DoActionPlayer(clsAction.PT_UP,value)
                 elif InpVal == MV_D :
-                    client.put_down()
+                    value = client.put_down()
+                    PlayerData.DoActionPlayer(clsAction.PT_DOWN,value)
                 else :
                     continue
 
@@ -311,9 +640,16 @@ def main():
 
         #周辺の情報を表示
         AreaTable.SetAreaList(value)
-        AreaTable.PrintArea(PlayerData)
-        
-        print(f"{B}*相手のターン{RE}")
+        AreaTable.PrintArea(PlayerData,EnemyPlayerData,clsAction.AC_AFTER)
+
+        # その他ステータスの表示
+        GameMaster.ShowGameStatus()
+
+        #print(f"{EnemyPlayerData.PlayerColor}{clsEtcValue.PRINT_LINE_NOMAL}{RE}") 
+        print("")
+        print(f"{EnemyPlayerData.PlayerColor} 相手のターン...please wait{RE}")
+        print("")
+        #print(f"{EnemyPlayerData.PlayerColor}{clsEtcValue.PRINT_LINE_NOMAL}{RE}") 
 
 if __name__ == "__main__":
     main()
