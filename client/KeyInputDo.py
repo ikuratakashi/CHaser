@@ -1,7 +1,7 @@
 import sys
-sys.path.append('lib\python\colorama')
-import colorama
-from colorama import Fore, Back, Style
+sys.path.append('lib')
+import colorama # type: ignore
+from colorama import Fore, Back, Style # type: ignore
 import signal
 import sys
 import math
@@ -28,6 +28,7 @@ MV_R = "6"  #右
 MV_U = "2"  #上
 MV_D = "8"  #下
 MV_N = "n"  #次の行動へ
+MV_B = "b"  #前の行動へ
 
 #定数 方向
 CH_T = 2
@@ -55,8 +56,8 @@ class clsEtcValue:
     """
     その他定数
     """
-    PRINT_LINE_NOMAL = "--------------------------------------------------------------------"
-    PRINT_LINE_ASTA  = "********************************************************************"
+    PRINT_LINE_NOMAL = "--------------------------------------------------------"
+    PRINT_LINE_ASTA  = "********************************************************"
 
 class clsItem:
     """
@@ -207,9 +208,9 @@ class clsPlayerData:
     # Wepon
     class clsWepon:
         # Wepon種類
-        BOM = "Bom"
-        CHAFF = "Decoy"
-        Eye = "Eye"
+        BOM = "BOM"
+        CHAFF = "CHAFF"
+        EYE = "EYE"
         BLOCK = "BLOCK"
 
         #値
@@ -232,13 +233,13 @@ class clsPlayerData:
     # ランダムセットアイテム
     option = [clsWepon(clsWepon.BOM,"???",1),
               clsWepon(clsWepon.CHAFF,"?????",1),
-              clsWepon(clsWepon.Eye,"??????",1)]
+              clsWepon(clsWepon.EYE,"???",3)]
     ramdomNo = random.randint(0, 2)
 
     # 武器の設定
     Wepon = [clsWepon(clsWepon.BOM,"",1),
              clsWepon(clsWepon.CHAFF,"",2),
-             clsWepon(clsWepon.Eye,"",5),
+             clsWepon(clsWepon.EYE,"",5),
              option[ramdomNo]]
 
     # HP
@@ -607,36 +608,34 @@ def main():
 
             BefInpVal = InpVal
 
-            break
-        
-        #移動をせずに、次の処理を行う場合
-        #ブロックの設置
-        if IsNextStep == True :
-            while(True):
+            #移動をせずに、次の処理を行う場合
+            #ブロックの設置
+            if IsNextStep == True :
+                while(True):
 
-                #キー入力
-                InpVal = input("[ブロックを置く] 5:待機 4:← 6:→ 2:↑ 8:↓ ...")
+                    #キー入力
+                    InpVal = input("[ブロックを置く] 5:待機 4:← 6:→ 2:↑ 8:↓ 戻る:b ...")
 
-                if InpVal == MV_0 : 
-                    #待機
-                    value = client.search_up()
-                    PlayerData.DoActionPlayer(clsAction.SR_UP,value)
-                elif InpVal == MV_L :
-                    value = client.put_left()
-                    PlayerData.DoActionPlayer(clsAction.PT_LEFT,value)
-                elif InpVal == MV_R :
-                    value = client.put_right()
-                    PlayerData.DoActionPlayer(clsAction.PT_RIGHT,value)
-                elif InpVal == MV_U :
-                    value = client.put_up()
-                    PlayerData.DoActionPlayer(clsAction.PT_UP,value)
-                elif InpVal == MV_D :
-                    value = client.put_down()
-                    PlayerData.DoActionPlayer(clsAction.PT_DOWN,value)
-                else :
-                    continue
+                    if InpVal == MV_0 : 
+                        #待機
+                        value = client.search_up()
+                        PlayerData.DoActionPlayer(clsAction.SR_UP,value)
+                    elif InpVal == MV_L :
+                        value = client.put_left()
+                        PlayerData.DoActionPlayer(clsAction.PT_LEFT,value)
+                    elif InpVal == MV_R :
+                        value = client.put_right()
+                        PlayerData.DoActionPlayer(clsAction.PT_RIGHT,value)
+                    elif InpVal == MV_U :
+                        value = client.put_up()
+                        PlayerData.DoActionPlayer(clsAction.PT_UP,value)
+                    elif InpVal == MV_D :
+                        value = client.put_down()
+                        PlayerData.DoActionPlayer(clsAction.PT_DOWN,value)
+                    else :
+                        continue
 
-                break
+                    break
 
         #周辺の情報を表示
         AreaTable.SetAreaList(value)

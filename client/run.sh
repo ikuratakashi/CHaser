@@ -14,7 +14,7 @@ case $1 in
     echo "COLL Run"
     python KeyInputDo.py -n COOL -p 2009 -h 192.168.3.15
     ;;
-c  h)
+  h)
     echo "HOT Run"
     python KeyInputDo.py -n HOT -p 2010 -h 192.168.3.15
     ;;
