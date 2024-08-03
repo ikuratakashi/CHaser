@@ -7,6 +7,7 @@ import sys
 import math
 import CHaser
 import random
+import copy
 
 """""
  # 起動方法
@@ -27,8 +28,11 @@ MV_L = "4"  #左
 MV_R = "6"  #右
 MV_U = "2"  #上
 MV_D = "8"  #下
-MV_N = "n"  #次の行動へ
-MV_B = "b"  #前の行動へ
+MV_B = "b"  #ブロックのメニューへ
+MV_M = "m"  #基本メニューへ
+MV_W = "w"  #上ポンメニューへ
+MV_S = "s"  #Searchメニューへ
+MV_LOOK = "l"  #Lookメニューへ
 
 #定数 方向
 CH_T = 2
@@ -166,6 +170,83 @@ class clslogRowCol:
         self.row = pRow
         self.Action = pAction
 
+class clsWepon:
+    """
+    Wepon(武器)のクラス
+    """
+
+    # Wepon種類
+    BOM = "BOM"
+    CHAFF = "CHAFF"
+    EYE = "EYE"
+    BLOCK = "BLOCK"
+    HELP = "HELP"
+
+    # Wepon種類
+    COMMAND_BOM = "bom"
+    COMMAND_CHAFF = "c"
+    COMMAND_EYE = "e"
+    COMMAND_BLOCK = "b"
+    COMMAND_RAND = "0"
+    COMMAND_HELP = "h"
+
+    #値
+    Type = ""
+    TypeCommand = ""
+    Name = ""
+    Cnt = 0
+    IsRand = False
+
+    def __init__(self,pType:str,pTypeCommand:str,pName:str,pCnt:int,pIsRand):
+        if pName == "":
+            self.Name = pType
+        else:
+            self.Name = pName
+
+        self.Type = pType
+        self.TypeCommand = pTypeCommand
+        self.Cnt = pCnt
+        self.IsRand = pIsRand
+    
+    def CleateMenuStr(self):
+        '''
+        武器のメニュー表示文字列を作成
+        '''
+        return f"{self.Name}({self.Cnt})"
+    
+    def CleateMenuStr(self):
+        '''
+        Weponメニュー
+        '''
+        return f"{self.Name}:{self.TypeCommand}"
+    
+    def CleateHelpStr(self):
+        '''
+        ヘルプの表示
+        '''
+        result = ""
+        if self.Type == self.BLOCK :
+            if self.IsRand == True:
+                result = f"{self.Name} : フィ？ルド％ブロッ＊を置き？す＊"
+            else:
+                result = f"{self.BLOCK} : フィールドにブロックを置きます。"
+        elif self.Type == self.CHAFF :
+            if self.IsRand == True:
+                result = f"{self.Name} : {R}未実装{RE} 相手の？図％示に＄％ングを＆＊ます。"
+            else:
+                result = f"{self.CHAFF} : {R}未実装{RE} 相手の地図表示にジャミングをかけます。"
+        elif self.Type == self.BOM :
+            if self.IsRand == True:
+                result = f"{self.Name} : {R}未実装{RE} フィ？ルドに＊％弾を？？ます。自分＃は B と＠示さ＊＋相手には ?(OoooOOOooo) と表？＋＄れます。取＄＃H？が減＝ます。"
+            else:
+                result = f"{self.BOM} : {R}未実装{RE} フィールドに爆弾を置きます。自分には B と表示され、相手には $(アイテム) と表示されます。取るとHPが減ります。"
+        elif self.Type == self.EYE :
+            if self.IsRand == True:
+                result = f"{self.Name} : {R}未実装{RE} 使＄する＊一定＃＊間表示＋る周＃マップ＠拡大＊＊れます。"
+            else:
+                result = f"{self.EYE} : {R}未実装{RE} 使用すると一定の時間表示される周辺マップが拡大されます。"
+            
+        return result
 
 class clsPlayerData:
     """
@@ -205,43 +286,6 @@ class clsPlayerData:
     #プレイヤーマーク
     PlayerMark = MarkCool
 
-    # Wepon
-    class clsWepon:
-        # Wepon種類
-        BOM = "BOM"
-        CHAFF = "CHAFF"
-        EYE = "EYE"
-        BLOCK = "BLOCK"
-
-        #値
-        Type = ""
-        Name = ""
-        Cnt = 0
-
-        def __init__(self,pType:str,pName:str,pCnt:int):
-            if pName == "":
-                self.Name = pType
-            else:
-                self.Name = pName
-
-            self.Type = pType
-            self.Cnt = pCnt
-        
-        def showStr(self):
-            return f"{self.Name}({self.Cnt})"
-        
-    # ランダムセットアイテム
-    option = [clsWepon(clsWepon.BOM,"???",1),
-              clsWepon(clsWepon.CHAFF,"?????",1),
-              clsWepon(clsWepon.EYE,"???",3)]
-    ramdomNo = random.randint(0, 2)
-
-    # 武器の設定
-    Wepon = [clsWepon(clsWepon.BOM,"",1),
-             clsWepon(clsWepon.CHAFF,"",2),
-             clsWepon(clsWepon.EYE,"",5),
-             option[ramdomNo]]
-
     # HP
     HP = 100
 
@@ -252,14 +296,24 @@ class clsPlayerData:
     # Level
     Level = 1
 
-    def __init__(self,pCool_Hot:int):
+    #装備しているWepon
+    Wepon = []
+
+    #Client
+    Client = None
+
+    def __init__(self,pCool_Hot:int,pClient:CHaser.Client):
         """
         コンストラクタ
 
         Args:
             pCool_Hot (int): CoolかHotか
+            pClient (CHaser.Client): Clientのインスタンス
 
         """
+
+        # Client
+        self.Client = pClient
 
         #CoolかHotかを設定    
         self.CoolHot = pCool_Hot
@@ -274,26 +328,31 @@ class clsPlayerData:
 
         return
     
+    def SetWepon(self,pWepon:list):
+        """
+        武器を持たせる
+        """
+        for wepon in pWepon:
+            self.Wepon.append(copy.deepcopy(wepon))
+    
     def ShowStatus(self):
         """
         ステータスの文字列を作成
         """
         WeponStrList = []
         for Wepon in self.Wepon:
-            WeponStrList.append(Wepon.showStr())
-        WeponStr = ' / '.join(WeponStrList)
+            WeponStrList.append(Wepon.CleateMenuStr())
+
+        if len(WeponStrList) <= 0:
+            WeponStr = f'{R}Ops!! No Wepon...{RE}'
+        else:
+            WeponStr = ' / '.join(WeponStrList)
 
         print(f"Level:{self.Level} / HP:{self.HP} / Exp:{self.Exp}/{self.NextExp}")
         print(f"Wepon:[{WeponStr}]")
 
         return
     
-    def GetItem(self,pItem:clsItem):
-        """
-        アイテムの保存
-        """
-        self.cntItem.append(pItem)
-
     def setDirection(self,pDr):
         """
         プレイヤーの方向を設定する
@@ -361,9 +420,54 @@ class clsGameMaster:
     EnemyPoint = 0
 
     # プレイヤー情報
-    MePlayer:clsPlayerData
+    Player:clsPlayerData
     EnemyPlayer:clsPlayerData
 
+    # ターン情報
+    TurnCnt = 0
+
+    # 武器の設定
+    ## ランダムセットアイテム
+    option = [clsWepon(clsWepon.BOM  ,clsWepon.COMMAND_RAND,"???"  ,1,True),
+              clsWepon(clsWepon.CHAFF,clsWepon.COMMAND_RAND,"?????",1,True),
+              clsWepon(clsWepon.EYE  ,clsWepon.COMMAND_RAND,"???"  ,3,True)]
+    ramdomNo = random.randint(0, len(option) - 1)
+
+    ## 武器
+    Wepon = [clsWepon(clsWepon.BLOCK,clsWepon.COMMAND_BLOCK,"",999,False),
+             clsWepon(clsWepon.BOM  ,clsWepon.COMMAND_BOM  ,"",1  ,False),
+             clsWepon(clsWepon.CHAFF,clsWepon.COMMAND_CHAFF,"",2  ,False),
+             clsWepon(clsWepon.EYE  ,clsWepon.COMMAND_EYE  ,"",5  ,False),
+             option[ramdomNo],
+             clsWepon(clsWepon.HELP ,clsWepon.COMMAND_HELP ,"",0,False)]
+    
+    def AddTurn(self):
+        """
+        ターンのカウント
+        """
+        self.TurnCnt += 1
+
+    def CleateWeponMenu(self):
+        """
+        メニューに表示するWeponのメニューを作成する
+        """
+        tmpList = []
+        for selWepon in self.Wepon:
+            tmpList.append(selWepon.CleateMenuStr())
+
+        return f"[Wepon] {' '.join(tmpList)} 未入力:Cancel ..."
+    
+    def CleateWeponHelp(self):
+        """
+        Weponヘルプを作成する
+        """
+        tmpList = []
+        for selWepon in self.Wepon:
+            tmpList.append(selWepon.CleateHelpStr())
+
+        newline = '\n'
+        return f"{B}-- Wepon Help --{RE}{newline}{newline.join(tmpList)}"
+    
     def AddMePoint(self,pItem:clsItem):
         """
         自分の点数加算
@@ -376,13 +480,34 @@ class clsGameMaster:
         ゲームのステータス表示
         """
         print(f"{clsEtcValue.PRINT_LINE_NOMAL}") 
-        self.MePlayer.ShowStatus()
+        self.Player.ShowStatus()
         print(f"{clsEtcValue.PRINT_LINE_NOMAL}") 
         return
     
     def GetPlayerColor(self):
-        if self.MePlayer.CoolHot == clsPlayerData.CH_COOL:
+        """
+        プレイヤーカラーを取得
+        """
+        if self.Player.CoolHot == clsPlayerData.CH_COOL:
+            return clsPlayerData.CH_COOL
+        else:
             return clsPlayerData.CH_HOT
+            
+    def GetEnemyColor(self):
+        """
+        敵カラーを取得
+        """
+        if self.Player.CoolHot == clsPlayerData.CH_COOL:
+            return clsPlayerData.CH_HOT
+        else:
+            return clsPlayerData.CH_COOL
+        
+    def SetWeponPlayer(self):
+        """
+        プレイヤーに武器を無理やり持たせる
+        """
+        self.Player.SetWepon(self.Wepon)
+            
 
 class clsAreaTalbeEx:
     """
@@ -530,30 +655,33 @@ def main():
     value = [] # フィールド情報を保存するリスト
     client = CHaser.Client() # サーバーと通信するためのインスタンス
 
+    # ゲームをなんとなく管理するGameMasterの設定
     GameMaster = clsGameMaster()
+    GameMaster.Player = clsPlayerData(client.ChkCoolHot(False),client)
+    GameMaster.EnemyPlayer = clsPlayerData(client.ChkCoolHot(True),client)
+
+    # プレイヤーにWeponを装備してもらう
+    GameMaster.SetWeponPlayer()
+
+    # プレイヤー情報の参照コピー
+    PlayerData = GameMaster.Player
+    EnemyPlayerData = GameMaster.EnemyPlayer
+
+    # 地図関連の管理（本当はGameMasterに管理してほしい...）
     AreaTable = clsAreaTable(3,3)
-
-    PlayerData = clsPlayerData(client.ChkCoolHot(False))
-    EnemyPlayerData = clsPlayerData(client.ChkCoolHot(True))
-
-    GameMaster.MePlayer = PlayerData
-    GameMaster.EnemyPlayer = EnemyPlayerData
-
     AreaTableEx = clsAreaTalbeEx(101,PlayerData)
 
+    # メイン処理
     BefInpVal = None
-
-    cntTurn = 0
-    
     while(True):
 
-        cntTurn += 1
+        GameMaster.AddTurn()
 
         value = client.get_ready()
 
         # タイトルの表示
         print(f"{PlayerData.PlayerColor}{clsEtcValue.PRINT_LINE_ASTA}{RE}") 
-        print(f"{PlayerData.PlayerColor} 自分のターン[Turn:{cntTurn}]{RE}")
+        print(f"{PlayerData.PlayerColor} 自分のターン[Turn:{GameMaster.TurnCnt}]{RE}")
         #print(f"{PlayerData.PlayerColor}{clsEtcValue.PRINT_LINE_ASTA}{RE}") 
 
         # 周辺の情報を表示
@@ -563,14 +691,20 @@ def main():
         # その他ステータスの表示
         GameMaster.ShowGameStatus()
 
-        IsNextStep = False
         while(True):
+
+            IsMoveStep = True
+            IsBlockStep = False
+            IsWeponStep = False
+            IsEndStep = False
+            IsSearchStep = False
+            IsLookStep = False
 
             #キー入力
             if BefInpVal == None :
-                InpVal = input("[移動] 5:待機 4:← 6:→ 2:↑ 8:↓ n:次 ...")
+                InpVal = input(f"[Move] ←:{MV_L} →:{MV_R} ↑:{MV_U} ↓:{MV_D} Serch:{MV_S} Look:{MV_LOOK} Wepon:{MV_W} ...")
             else :
-                InpVal = input(f"[移動] 5:待機 4:← 6:→ 2:↑ 8:↓ n:次 前回({BefInpVal}):未入力 ...")
+                InpVal = input(f"[Move] ←:{MV_L} →:{MV_R} ↑:{MV_U} ↓:{MV_D} Serch:{MV_S} Look:{MV_LOOK} Wepon:{MV_W} Bef({BefInpVal}):未入力...")
                 if InpVal == "":
                     InpVal = BefInpVal
 
@@ -584,58 +718,153 @@ def main():
                         continue
 
             #移動
-            if InpVal == MV_0 :
-                #待機
-                valueTmp = client.search_up()
-                PlayerData.DoActionPlayer(clsAction.MV_WAITE,valueTmp)
-            elif InpVal == MV_L :
+            IsInputBefSetValue = False
+            if InpVal == MV_L :
                 value = client.walk_left()
                 PlayerData.DoActionPlayer(clsAction.MV_LEFT,value)
+                IsEndStep = True
+                IsInputBefSetValue = True
             elif InpVal == MV_R :
                 value = client.walk_right()
                 PlayerData.DoActionPlayer(clsAction.MV_RIGHT,value)
+                IsEndStep = True
+                IsInputBefSetValue = True
             elif InpVal == MV_U :
                 value = client.walk_up()
                 PlayerData.DoActionPlayer(clsAction.MV_TOP,value)
+                IsEndStep = True
+                IsInputBefSetValue = True
             elif InpVal == MV_D :
                 value = client.walk_down()
                 PlayerData.DoActionPlayer(clsAction.MV_DOWN,value)
-            elif InpVal == MV_N :
-                IsNextStep = True
+                IsEndStep = True
+                IsInputBefSetValue = True
+            elif InpVal == MV_S :
+                IsSearchStep = True
+            elif InpVal == MV_LOOK :
+                IsLookStep = True
+            elif InpVal == MV_W :
+                IsWeponStep = True
             else :
                 print(f"{R}入力値が不正です!!!{RE}")
                 continue
 
-            BefInpVal = InpVal
+            #前回と同じコマンドとして保存する場合
+            if IsInputBefSetValue == True:
+                BefInpVal = InpVal
 
-            #移動をせずに、次の処理を行う場合
-            #ブロックの設置
-            if IsNextStep == True :
+            #Weponメニュー
+            if IsWeponStep == True :
                 while(True):
 
                     #キー入力
-                    InpVal = input("[ブロックを置く] 5:待機 4:← 6:→ 2:↑ 8:↓ 戻る:b ...")
+                    InpVal = input(f"{GameMaster.CleateWeponMenu()}")
 
-                    if InpVal == MV_0 : 
-                        #待機
-                        value = client.search_up()
-                        PlayerData.DoActionPlayer(clsAction.SR_UP,value)
-                    elif InpVal == MV_L :
+                    if InpVal == clsWepon.COMMAND_BLOCK :
+                        IsBlockStep = True
+                        break
+                    elif InpVal == clsWepon.COMMAND_HELP :
+                        print(f"{GameMaster.CleateWeponHelp()}")
+                        continue
+                    else :
+                        IsMoveStep = True
+                        break
+
+            #ブロックの設置メニュー
+            if IsBlockStep == True :
+                while(True):
+
+                    #キー入力
+                    InpVal = input(f"[Block] ←:{MV_L} →:{MV_R} ↑:{MV_U} ↓:{MV_D} 未入力:Cancel ...")
+
+                    if InpVal == MV_L :
                         value = client.put_left()
                         PlayerData.DoActionPlayer(clsAction.PT_LEFT,value)
+                        IsEndStep = True
+                        break
                     elif InpVal == MV_R :
                         value = client.put_right()
                         PlayerData.DoActionPlayer(clsAction.PT_RIGHT,value)
+                        IsEndStep = True
+                        break
                     elif InpVal == MV_U :
                         value = client.put_up()
                         PlayerData.DoActionPlayer(clsAction.PT_UP,value)
+                        IsEndStep = True
+                        break
                     elif InpVal == MV_D :
                         value = client.put_down()
                         PlayerData.DoActionPlayer(clsAction.PT_DOWN,value)
+                        IsEndStep = True
+                        break
                     else :
-                        continue
+                        IsMoveStep = True
+                        break
 
-                    break
+            #Searchメニュー
+            if IsSearchStep == True :
+                while(True):
+
+                    #キー入力
+                    InpVal = input(f"[Search] ←:{MV_L} →:{MV_R} ↑:{MV_U} ↓:{MV_D} Cancel:未入力 ...")
+
+                    if InpVal == MV_L :
+                        value = client.search_left()
+                        PlayerData.DoActionPlayer(clsAction.SR_LEFT,value)
+                        IsEndStep = True
+                        break
+                    elif InpVal == MV_R :
+                        value = client.search_right()
+                        PlayerData.DoActionPlayer(clsAction.SR_RIGHT,value)
+                        IsEndStep = True
+                        break
+                    elif InpVal == MV_U :
+                        value = client.search_up()
+                        PlayerData.DoActionPlayer(clsAction.SR_UP,value)
+                        IsEndStep = True
+                        break
+                    elif InpVal == MV_D :
+                        value = client.search_down()
+                        PlayerData.DoActionPlayer(clsAction.SR_DOWN,value)
+                        IsEndStep = True
+                        break
+                    else :
+                        IsMoveStep = True
+                        break
+
+            #Lookメニュー
+            if IsLookStep == True :
+                while(True):
+
+                    #キー入力
+                    InpVal = input(f"[Look] ←:{MV_L} →:{MV_R} ↑:{MV_U} ↓:{MV_D} Cancel:未入力 ...")
+
+                    if InpVal == MV_L :
+                        value = client.look_left()
+                        PlayerData.DoActionPlayer(clsAction.LO_LEFT,value)
+                        IsEndStep = True
+                        break
+                    elif InpVal == MV_R :
+                        value = client.look_right()
+                        PlayerData.DoActionPlayer(clsAction.LO_RIGHT,value)
+                        IsEndStep = True
+                        break
+                    elif InpVal == MV_U :
+                        value = client.look_up()
+                        PlayerData.DoActionPlayer(clsAction.LO_UP,value)
+                        IsEndStep = True
+                        break
+                    elif InpVal == MV_D :
+                        value = client.look_down()
+                        PlayerData.DoActionPlayer(clsAction.LO_DOWN,value)
+                        IsEndStep = True
+                        break
+                    else :
+                        IsMoveStep = True
+                        break
+
+            if IsEndStep == True:
+                break
 
         #周辺の情報を表示
         AreaTable.SetAreaList(value)
