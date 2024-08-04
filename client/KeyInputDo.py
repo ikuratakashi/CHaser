@@ -142,6 +142,7 @@ class clsSystemAdministrator:
         figlet = Figlet()
         self.PrintTextDelay(figlet.renderText("CHaser GAME"),0.002)
         print(f"-- {self.Version} --")
+        print()
         print(f"{B}[System Initialization]{RE}")
 
         # システム起動
@@ -212,7 +213,11 @@ class clsSystemAdministrator:
             InitItem.Run()
 
         print(f"<<Result : {G}ALL GREEN{RE}>>")
+        print()
+        print()
         self.PrintTextDelay("Wellcome To CHaser Game.",0.07)
+        print()
+        print()
 
     def PrintTextDelay(self,text: str, delay: float = 0.1) -> None:
         """
