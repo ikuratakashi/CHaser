@@ -13,6 +13,11 @@ import random
 import copy
 from enum import Enum
 import time
+import winsound
+
+#winsound.Beep(1500, 200)
+#time.sleep(0.1)
+#winsound.Beep(800, 200)
 
 """""
  # 起動方法
@@ -140,7 +145,7 @@ class clsSystemAdministrator:
         起動タイトルの表示
         """
         figlet = Figlet()
-        self.PrintTextDelay(figlet.renderText("CHaser GAME"),0.002)
+        self.PrintTextDelay(figlet.renderText("CHaser GAME"),0.001)
         print(f"-- {self.Version} --")
         print()
         print(f"{B}[System Initialization]{RE}")
@@ -189,9 +194,16 @@ class clsSystemAdministrator:
                 text (str): 表示するテキスト
                 delay (float): 各文字を表示する間隔（秒）
             """
+            counter = 0
             for char in text:
                 print(char, end='', flush=True)
                 time.sleep(delay)
+                counter += 1 
+                if delay <= 0.001:
+                    if counter % 10 == 0:
+                        time.sleep(delay)
+                else:
+                    time.sleep(delay)
     
     def Initialize(self):
         """
@@ -226,25 +238,31 @@ class clsSystemAdministrator:
             text (str): 表示するテキスト
             delay (float): 各文字を表示する間隔（秒）
         """
+        counter = 0
         for char in text:
             print(char, end='', flush=True)
-            time.sleep(delay)
+            counter += 1 
+            if delay <= 0.001:
+                if counter % 10 == 0:
+                    time.sleep(delay)
+            else:
+                time.sleep(delay)
 
-def IsInt(s):
-    """
-    引数の値が数値かどうかを判定
+    def IsInt(s):
+        """
+        引数の値が数値かどうかを判定
 
-    Args:
-        s (string): 値
+        Args:
+            s (string): 値
 
-    Returns:
-        bool: True:数値 False:数値以外
-    """    
-    try:
-        int(s)
-        return True
-    except ValueError:
-        return False
+        Returns:
+            bool: True:数値 False:数値以外
+        """    
+        try:
+            int(s)
+            return True
+        except ValueError:
+            return False
 
 class clslogRowCol:
     """
