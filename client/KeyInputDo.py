@@ -13,6 +13,8 @@ import random
 import copy
 from enum import Enum
 import time
+import numpy as np # type: ignore
+import sounddevice as sd # type: ignore
 
 """""
  # 起動方法
@@ -130,11 +132,82 @@ def signal_handler(sig, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
+class clsBeep:
+    """
+    beep音のクラス
+    """    
+    # サンプリングレート
+    sample_rate = 44100
+
+    # 音の周波数（Hz）と持続時間（秒）のペア
+    SE_PIPO = "SE_PIPO"
+    SE_KEYINPUT = "SE_KEYINPUT"
+    SE_OK = "SE_OK"
+    SE_NG = "SE_NG"
+    notes = {   
+                SE_PIPO:
+                [
+                    (1000, 0.1),  # 高音（1000 Hz）0.1秒（「ぴ」）
+                    (500, 0.1),   # 低音（500 Hz）0.1秒（「ぽ」）
+                    (1000, 0.1)   # 高音（1000 Hz）0.1秒（「っ」）
+                ],
+                SE_OK:
+                [
+                    (1500, 0.01)    # 低音（500 Hz）0.1秒（「」）
+                ],
+                SE_NG:
+                [
+                    (500, 0.01)    # 低音（500 Hz）0.1秒（「」）
+                ]
+    }
+    
+    def generate_tone(self,frequency, duration, sample_rate):
+        """
+        各音の信号を生成
+        """
+        t = np.linspace(0, duration, int(sample_rate * duration), endpoint=False)
+        signal = 0.5 * np.sin(2 * np.pi * frequency * t)
+        return signal
+
+    def generate_sequence(self,notes, sample_rate):
+        """
+        シーケンスを生成
+        """
+        sequence = np.concatenate([self.generate_tone(frequency, duration, sample_rate) for frequency, duration in notes])
+        return sequence
+    
+    def CreateSound(self,pKey):
+        """
+        音を作る
+        """
+        # 音を生成
+        return self.generate_sequence(self.notes[pKey], self.sample_rate)
+
+    def SoundStart(self,pSound,pIsWait:bool = False):
+        """
+        再生
+        """
+        # 音を再生
+        sd.play(pSound, self.sample_rate)
+        # 再生が終わるのを待つ
+        if pIsWait:
+            sd.wait()
+            time.sleep(0.3)
+            
+
 class clsSystemAdministrator:
     """
     システムクラス
     """    
     Version = "FG204 2nd EDITION Ver2.31"
+
+    def StartupSound(self):
+        """
+        起動音のようなものを鳴らす
+        """
+        sound = clsBeep().CreateSound(clsBeep.SE_PIPO)
+        clsBeep().SoundStart(sound,True)
+
     def TitleShow(self) :
         """
         起動タイトルの表示
@@ -165,8 +238,8 @@ class clsSystemAdministrator:
             実行
             """
             print(f"{self.Item} {self.Action} ",end='')
-            delay = random.randint(1, 2) / 70
-            cnt = 30 - len(self.Item) - len(self.Action)
+            delay = random.randint(1, 2) / 800
+            cnt = 40 - len(self.Item) - len(self.Action)
             print(G,end="")
             self.PrintTextDelay('━' * cnt,delay)
             print(RE,end="")
@@ -218,13 +291,23 @@ class clsSystemAdministrator:
                     ,self.clsInitList("HOS System","Loading",f"{G}OK{RE}")
                     ,self.clsInitList("ISO27001","Check",f"{G}OK{RE}")
                    ]
+    
+        #se_ok = clsBeep().CreateSound(clsBeep.SE_OK)
+        #se_ng = clsBeep().CreateSound(clsBeep.SE_NG)
+
         for InitItem in InitList:
             InitItem.Run()
+            """
+            if "OK" in InitItem.Result :
+                clsBeep().SoundStart(se_ok)
+            else:
+                clsBeep().SoundStart(se_ng)
+            """
 
         print(f"<<Result : {G}ALL GREEN{RE}>>")
         print()
         print()
-        self.PrintTextDelay("Wellcome To CHaser Game.",0.07)
+        self.PrintTextDelay("Wellcome To CHaser Game.",0.007)
         print()
         print()
 
@@ -1010,6 +1093,9 @@ def main():
     
     # プログラムを管理するクラスの使用
     Administrator = clsSystemAdministrator()
+    # 起動音を鳴らす
+    Administrator.StartupSound()
+    # タイトルの表示
     Administrator.TitleShow()
 
     return
