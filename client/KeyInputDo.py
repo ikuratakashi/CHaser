@@ -13,11 +13,6 @@ import random
 import copy
 from enum import Enum
 import time
-import winsound
-
-#winsound.Beep(1500, 200)
-#time.sleep(0.1)
-#winsound.Beep(800, 200)
 
 """""
  # 起動方法
@@ -169,23 +164,25 @@ class clsSystemAdministrator:
             """
             実行
             """
-            print(f"{self.Item} {self.Action}",end='')
+            print(f"{self.Item} {self.Action} ",end='')
             delay = random.randint(1, 2) / 70
             cnt = 30 - len(self.Item) - len(self.Action)
-            self.PrintTextDelay('.' * cnt,delay)
+            print(G,end="")
+            self.PrintTextDelay('━' * cnt,delay)
+            print(RE,end="")
 
             if self.Item == "MEMORY-VMS":
                 process = psutil.Process()
                 memory_info = process.memory_info()  
                 str =  f"[{memory_info.vms} Byte]"
-                print(f"{self.Result} {str}")
+                print(f" {self.Result} {str}")
             elif self.Item == "MEMORY-RSS":
                 process = psutil.Process()
                 memory_info = process.memory_info()  
                 str =  f"[{memory_info.rss} Byte]"
-                print(f"{self.Result} {str}")
+                print(f" {self.Result} {str}")
             else:
-                print(self.Result)
+                print(f" {self.Result}")
 
         def PrintTextDelay(self,text: str, delay: float = 0.1) -> None:
             """
@@ -214,7 +211,7 @@ class clsSystemAdministrator:
                     ,self.clsInitList("MEMORY-RSS","Check",f"{G}OK{RE}")
                     ,self.clsInitList("BIOS","Loading",f"{G}OK{RE}")
                     ,self.clsInitList("ASURA","Loading",f"{G}OK{RE}")
-                    ,self.clsInitList("BABEL","Check",f"{G}OK{RE}")
+                    ,self.clsInitList("BABEL","Loading",f"{G}OK{RE}")
                     ,self.clsInitList("L.O.S","Loading",f"{R}NG{RE} [Update To HOS]")
                     ,self.clsInitList("HOS","DownLoading",f"{G}OK{RE}")
                     ,self.clsInitList("HOS System","Updateing",f"{G}OK{RE} [L.O.S -> HOS(ver.shige)]")
