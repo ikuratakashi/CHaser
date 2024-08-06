@@ -254,6 +254,14 @@ class clsSystemAdministrator:
                 memory_info = process.memory_info()  
                 str =  f"[{memory_info.rss} Byte]"
                 print(f" {self.Result} {str}")
+            elif self.Item == "Divergence":
+                DList = [
+                             {"type":f"{G}SG{RE}","value":"1.048596%"}
+                            ,{"type":f"α","value" :"0.456903%"}
+                            ,{"type":f"β","value" :"1.130212%"}
+                        ]
+                selList = random.choice(DList)
+                print(f" {self.Result} [{selList['value']} {selList['type']}]")
             else:
                 print(f" {self.Result}")
 
@@ -280,15 +288,17 @@ class clsSystemAdministrator:
         システムの初期化
         """
         InitList = [ 
-                     self.clsInitList("MEMORY-VMS","Check",f"{G}OK{RE}")
+                     self.clsInitList("Divergence","Check",f"{G}OK{RE}")
+                    ,self.clsInitList("MEMORY-VMS","Check",f"{G}OK{RE}")
                     ,self.clsInitList("MEMORY-RSS","Check",f"{G}OK{RE}")
                     ,self.clsInitList("BABEL","Loading",f"{G}OK{RE}")
-                    ,self.clsInitList("L.O.S","Loading",f"{R}NG{RE} [Update To HOS]")
-                    ,self.clsInitList("HOS","DownLoading",f"{G}OK{RE}")
-                    ,self.clsInitList("HOS System","Updateing",f"{G}OK{RE} [L.O.S -> HOS(ver.shige)]")
-                    ,self.clsInitList("HOS System","Loading",f"{G}OK{RE}")
-                    ,self.clsInitList("ALPHA A7M2","Connect",f"{G}OK{RE}")
-                    ,self.clsInitList("MAGI System","Connect",f"{G}OK{RE}")
+                    #,self.clsInitList("L.O.S","Loading",f"{R}NG{RE} [Update To HOS]")
+                    #,self.clsInitList("HOS","DownLoading",f"{G}OK{RE}")
+                    #,self.clsInitList("HOS System","Updateing",f"{G}OK{RE} [L.O.S -> HOS(ver.shige)]")
+                    ,self.clsInitList("HOS","Loading",f"{G}OK{RE}")
+                    ,self.clsInitList("ALPHA.A7M2","Connect",f"{G}OK{RE}")
+                    ,self.clsInitList("TACHIKOMA.SEC9","Connect",f"{G}OK{RE}")
+                    ,self.clsInitList("Amadeus.Makise","Connect",f"{G}OK{RE}")
                    ]
     
         #se_ok = clsBeep().CreateSound(clsBeep.SE_OK)
@@ -306,7 +316,7 @@ class clsSystemAdministrator:
         print(f"<<Result : {G}ALL GREEN{RE}>>")
         print()
         print()
-        self.PrintTextDelay("Wellcome To CHaser Game.",0.007)
+        self.PrintTextDelay("Hello!! CHaser Game.",0.007)
         print()
         print()
         print()
