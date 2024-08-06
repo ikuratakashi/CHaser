@@ -4,7 +4,6 @@ import colorama # type: ignore
 from colorama import Fore, Back, Style # type: ignore
 import pyfiglet # type: ignore
 from pyfiglet import Figlet # type: ignore
-import psutil  # type: ignore
 import signal
 import sys
 import math
@@ -13,6 +12,12 @@ import random
 import copy
 from enum import Enum
 import time
+
+"""
+# メモリの容量を取得するライブラリ Windowsとmacで共存できないのでコメントアウト
+# '# psutil' でソース内を検索するとコメント外す場所が出てくる
+import psutil  # type: ignore
+"""
 
 """
 # Beep音を鳴らす場合は以下を有効にするのと、ソースでコメントを外す
@@ -256,6 +261,8 @@ class clsSystemAdministrator:
             self.PrintTextDelay('━' * cnt,delay)
             print(RE,end="")
 
+            """"
+            # psutil
             if self.Item == "MEMORY-VMS":
                 process = psutil.Process()
                 memory_info = process.memory_info()  
@@ -266,7 +273,8 @@ class clsSystemAdministrator:
                 memory_info = process.memory_info()  
                 str =  f"[{memory_info.rss} Byte]"
                 print(f" {self.Result} {str}")
-            elif self.Item == "Divergence":
+            """
+            if self.Item == "Divergence":
                 DList = [
                              {"type":f"{G}SG{RE}","value":"1.048596%"}
                             ,{"type":f"α","value" :"0.456903%"}
@@ -301,8 +309,9 @@ class clsSystemAdministrator:
         """
         InitList = [ 
                      self.clsInitList("Divergence","Check",f"{G}OK{RE}")
-                    ,self.clsInitList("MEMORY-VMS","Check",f"{G}OK{RE}")
-                    ,self.clsInitList("MEMORY-RSS","Check",f"{G}OK{RE}")
+                    #,self.clsInitList("MEMORY-VMS","Check",f"{G}OK{RE}")
+                    #,self.clsInitList("MEMORY-RSS","Check",f"{G}OK{RE}")
+                    ,self.clsInitList("MEMORY","Check",f"{G}OK{RE} [1024 KB]")
                     ,self.clsInitList("ASURA","Loading",f"{G}OK{RE}")
                     #,self.clsInitList("L.O.S","Loading",f"{R}NG{RE} [Update To HOS]")
                     #,self.clsInitList("HOS","DownLoading",f"{G}OK{RE}")
