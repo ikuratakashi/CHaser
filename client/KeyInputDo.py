@@ -138,7 +138,7 @@ def signal_handler(sig, frame):
     """
     Ctrl+Cが押された時の処理
     """
-    print(f"{R}\nCtrl+Cが押されました。プログラムを終了します。")
+    print(f"{R}\nCtrl+Cが押されました。プログラムを終了します。{RE}")
     colorama.deinit()
     sys.exit(0)
 
@@ -461,8 +461,16 @@ class clsWepon:
     def CleateStatusStr(self) -> str:
         '''
         武器のメニュー表示文字列を作成
+        装備中の武器
         '''
         return f"{self.Name}({self.Cnt})"
+    
+    def CleateUseStatusStr(self) -> str:
+        '''
+        武器のメニュー表示文字列を作成
+        使用中の武器
+        '''
+        return f"{self.Name}({self.UseTurn - self.UsedTurnCnt}/{self.UseTurn})"
     
     def CleateMenuStr(self,pCommandColor:str):
         '''
@@ -549,7 +557,17 @@ class clsWepons:
         result:list[clsWepon] = []
         for key,wepon in self.Wepons.items():
             result.append(wepon)
-        return result 
+        return result
+
+    def GetUseWepons(self) -> list:
+        """
+        使用中の武器を返す
+        """
+        result:[clsWepon] = []
+        for wepon in self.Wepons
+            if wepon.IsUsed == True:
+                result.append(wepon)
+        return result
 
 class enmActionResult(Enum):
     """
@@ -682,19 +700,29 @@ class clsPlayerData:
         # GameMasterに処理があった方がよいかも
         """
 
+        # 持っている武器の一覧を取得
         WeponStrList = []
-
-        for Wepon in self.Wepons.GetWepons():
-            if Wepon.Type != clsWepon.HELP:
-                WeponStrList.append(Wepon.CleateStatusStr())
+        for wp in self.Wepons.GetWepons():
+            if wp.Type != clsWepon.HELP:
+                WeponStrList.append(wp.CleateStatusStr())
 
         if len(WeponStrList) <= 0:
             WeponStr = f'{R}Ops!! No Wepon...{RE}'
         else:
             WeponStr = ' / '.join(WeponStrList)
 
+        # 使用中の武器の一覧を取得
+        UseWeponStrList = []
+        UseWeponStr = ""
+        for wp:clsWepon in self.Wepons.GetUseWepons():
+            if wp.Type != clsWepon.HELP:
+                UseWeponStrList.append(wp.CleateUseStatusStr())
+        UseWeponStr = ' / '.join(UseWeponStrList)
+
+        # ステータスの表示
         print(f"Level:{self.Level} / HP:{self.HP} / Exp:{self.Exp}/{self.NextExp}")
         print(f"Wepon:{WeponStr}")
+        print(f"WeponUse:{UseWeponStr}")
 
         return
     
