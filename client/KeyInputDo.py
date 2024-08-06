@@ -16,6 +16,8 @@ import time
 import numpy as np # type: ignore
 import sounddevice as sd # type: ignore
 
+sys.exit(0)
+
 """""
  # 起動方法
 
