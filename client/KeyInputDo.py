@@ -421,7 +421,28 @@ class clsWepon:
     Cnt = 0
     IsRand = False
 
-    def __init__(self,pType:str,pTypeCommand:str,pName:str,pCnt:int,pIsRand):
+    # 使用中フラグ
+    IsUsed = False
+
+    # 使用できるターン数
+    UseTurn = 0
+
+    # 使用したターン数
+    UsedTurnCnt = 0
+
+    def __init__(self,pType:str,pTypeCommand:str,pName:str,pCnt:int,pIsRand:bool,pUseTurn:int = 0):
+        '''
+        コンストラクタ
+
+        Args:
+            pType (str): 武器の種類
+            pTypeCommand (str): 入力コマンド
+            pName (str): メニューに表示する名称
+            pCnt (int): 使用回数
+            pIsRand (bool): ランダムアイテムかどうか
+            pUseTurn (int): 使用可能ターン数
+
+        '''
         if pName == "":
             self.Name = pType
         else:
@@ -435,6 +456,7 @@ class clsWepon:
         self.TypeCommand = pTypeCommand
         self.Cnt = pCnt
         self.IsRand = pIsRand
+        self.UseTurn = pUseTurn
     
     def CleateStatusStr(self) -> str:
         '''
@@ -492,6 +514,13 @@ class clsWepon:
         武器の回数追加
         """    
         self.Cnt += pCnt
+
+    def AddUseTruenCnt(self):
+        """
+        使用ターン数のカウント
+        """
+        self.UsedTurnCnt += 1
+
 
 class clsWepons:
     """
@@ -611,6 +640,9 @@ class clsPlayerData:
     # 実行したアクション
     NowAction:clsAction = clsAction.AC_GETREADY
 
+    # 使用中の武器リスト
+    UseWepon = {}
+
     def __init__(self,pCool_Hot:int,pClient:CHaser.Client):
         """
         コンストラクタ
@@ -688,7 +720,7 @@ class clsPlayerData:
         self.row = pRow
         return
     
-    def DoActionPlayerTest(self,pAction:clsAction,pAreaList:list) -> clsActionResult:
+    def DoActionPlayerTest(self,pAction:clsAction,pAreaList:list[int]) -> clsActionResult:
         """
         プレイヤーの行動テスト
         Args:
@@ -707,22 +739,24 @@ class clsPlayerData:
             pAction == clsAction.MV_RIGHT):
 
             # 移動 #1
+            print(f"pAreaList={pAreaList}")
+
             if pAction == clsAction.MV_UP:
-                if self.IsBlock(pAreaList, MV_U) == True:
+                if self.IsBlock(pAreaList, int(MV_U)) == True:
                     result.Result = enmActionResult.BLOCK
             elif pAction == clsAction.MV_DOWN:
-                if self.IsBlock(pAreaList, MV_D):
+                if self.IsBlock(pAreaList, int(MV_D)):
                     result.Result = enmActionResult.BLOCK
             elif pAction == clsAction.MV_LEFT:
-                if self.IsBlock(pAreaList, MV_L):
+                if self.IsBlock(pAreaList, int(MV_L)):
                     result.Result = enmActionResult.BLOCK
             elif pAction == clsAction.MV_RIGHT:
-                if self.IsBlock(pAreaList, MV_R):
+                if self.IsBlock(pAreaList, int(MV_R)):
                     result.Result = enmActionResult.BLOCK
         
         return result
 
-    def IsBlock(pValue:list,pNext:int) -> bool:
+    def IsBlock(self,pValue:list[int],pNext:int) -> bool:
         """
         移動しようとしている方向にブロックがあるかどうかを返す
 
@@ -1000,6 +1034,7 @@ class clsAreaTable:
     A_PLAYER_EM = 1
     A_BLOCK = 2
     A_ITEM = 3
+    A_NONE = 999
 
     #周辺情報のプレイヤーの表示モード
     PrintAreaPutPlayerMode = PrintAreaPutPlayerMode.P_3x3
@@ -1011,7 +1046,10 @@ class clsAreaTable:
         self.cols = pCols
         self.rows = pRows
         self.arealist = []    
-        self.arealist = [[None for _ in range(self.cols)] for _ in range(self.rows)]
+        self.arealist = [[ self.A_NONE for _ in range(self.cols)] for _ in range(self.rows)]
+        for rows in self.arealist:
+            for field in rows:
+                field
         return
     
     def AddAreaList(self,pArea:list):
@@ -1020,9 +1058,186 @@ class clsAreaTable:
         """
         return
     
-    def UpdateAreaList(self,pArea:list,pAction:clsAction):
+    def UpdateAreaList(self,pSetArea:list,pPlayer:clsPlayerData,pAction:clsAction):
         """
-        周辺の情報を設定する
+        周辺の情報を更新する
+        """
+
+        if (pAction == clsAction.AC_GETREADY or 
+            pAction == clsAction.PT_UP or 
+            pAction == clsAction.PT_RIGHT or
+            pAction == clsAction.PT_DOWN or
+            pAction == clsAction.PT_LEFT):
+            """
+            P...プレイヤー
+              0 1 2
+              3 4 5
+              6 7 8
+ 
+              0 1 2 
+              3 P 5 
+              6 7 8
+            """
+            self.arealist[pPlayer.col - 1][pPlayer.row - 1] = pSetArea[0]
+            self.arealist[pPlayer.col - 0][pPlayer.row - 1] = pSetArea[1]
+            self.arealist[pPlayer.col + 1][pPlayer.row - 1] = pSetArea[2]
+            self.arealist[pPlayer.col - 1][pPlayer.row - 0] = pSetArea[3]
+            self.arealist[pPlayer.col - 0][pPlayer.row - 0] = "" #プレイヤーなので空白
+            self.arealist[pPlayer.col + 1][pPlayer.row - 0] = pSetArea[5]
+            self.arealist[pPlayer.col - 1][pPlayer.row + 1] = pSetArea[6]
+            self.arealist[pPlayer.col - 0][pPlayer.row + 1] = pSetArea[7]
+            self.arealist[pPlayer.col + 1][pPlayer.row + 1] = pSetArea[8]
+
+        elif pAction == clsAction.LO_RIGHT:
+            """
+            P...プレイヤー
+                  0 1 2
+                P 3 4 5
+                  6 7 8
+            """
+            self.arealist[pPlayer.col + 1][pPlayer.row - 1] = pSetArea[0]
+            self.arealist[pPlayer.col + 2][pPlayer.row - 1] = pSetArea[1]
+            self.arealist[pPlayer.col + 3][pPlayer.row - 1] = pSetArea[2]
+            self.arealist[pPlayer.col + 1][pPlayer.row - 0] = pSetArea[3]
+            self.arealist[pPlayer.col + 2][pPlayer.row - 0] = pSetArea[4]
+            self.arealist[pPlayer.col + 3][pPlayer.row - 0] = pSetArea[5]
+            self.arealist[pPlayer.col + 1][pPlayer.row + 1] = pSetArea[6]
+            self.arealist[pPlayer.col + 2][pPlayer.row + 1] = pSetArea[7]
+            self.arealist[pPlayer.col + 3][pPlayer.row + 1] = pSetArea[8]
+
+        elif pAction == clsAction.LO_DOWN:
+            """
+            P...プレイヤー
+                  P
+                0 1 2
+                3 4 5
+                6 7 8
+            """
+            self.arealist[pPlayer.col - 1][pPlayer.row + 1] = pSetArea[0]
+            self.arealist[pPlayer.col + 0][pPlayer.row + 1] = pSetArea[1]
+            self.arealist[pPlayer.col + 1][pPlayer.row + 1] = pSetArea[2]
+            self.arealist[pPlayer.col - 1][pPlayer.row + 2] = pSetArea[3]
+            self.arealist[pPlayer.col + 0][pPlayer.row + 2] = pSetArea[4]
+            self.arealist[pPlayer.col + 1][pPlayer.row + 2] = pSetArea[5]
+            self.arealist[pPlayer.col - 1][pPlayer.row + 3] = pSetArea[6]
+            self.arealist[pPlayer.col + 0][pPlayer.row + 3] = pSetArea[7]
+            self.arealist[pPlayer.col + 1][pPlayer.row + 3] = pSetArea[8]
+
+        elif pAction == clsAction.LO_DOWN:
+            """
+            P...プレイヤー
+                0 1 2
+                3 4 5 P
+                6 7 8
+            """
+            self.arealist[pPlayer.col - 3][pPlayer.row + 1] = pSetArea[0]
+            self.arealist[pPlayer.col - 2][pPlayer.row + 0] = pSetArea[1]
+            self.arealist[pPlayer.col - 1][pPlayer.row - 1] = pSetArea[2]
+            self.arealist[pPlayer.col - 3][pPlayer.row + 1] = pSetArea[3]
+            self.arealist[pPlayer.col - 2][pPlayer.row + 0] = pSetArea[4]
+            self.arealist[pPlayer.col - 1][pPlayer.row - 1] = pSetArea[5]
+            self.arealist[pPlayer.col - 3][pPlayer.row + 1] = pSetArea[6]
+            self.arealist[pPlayer.col - 2][pPlayer.row + 0] = pSetArea[7]
+            self.arealist[pPlayer.col - 1][pPlayer.row - 1] = pSetArea[8]
+
+        elif pAction == clsAction.LO_UP:
+            """
+            P...プレイヤー
+                0 1 2
+                3 4 5
+                6 7 8
+                  P
+            """
+            self.arealist[pPlayer.col - 1][pPlayer.row + 3] = pSetArea[0]
+            self.arealist[pPlayer.col - 0][pPlayer.row + 3] = pSetArea[1]
+            self.arealist[pPlayer.col + 1][pPlayer.row + 3] = pSetArea[2]
+            self.arealist[pPlayer.col - 1][pPlayer.row + 2] = pSetArea[3]
+            self.arealist[pPlayer.col - 0][pPlayer.row + 2] = pSetArea[4]
+            self.arealist[pPlayer.col + 1][pPlayer.row + 2] = pSetArea[5]
+            self.arealist[pPlayer.col - 1][pPlayer.row + 1] = pSetArea[6]
+            self.arealist[pPlayer.col - 0][pPlayer.row + 1] = pSetArea[7]
+            self.arealist[pPlayer.col + 1][pPlayer.row + 1] = pSetArea[8]
+
+        elif pAction == clsAction.SR_RIGHT:
+            """
+            P...プレイヤー
+                  P 0 1 2 3 4 5 6 7 8
+            """
+            self.arealist[pPlayer.col + 1][pPlayer.row + 0] = pSetArea[0]
+            self.arealist[pPlayer.col + 2][pPlayer.row + 0] = pSetArea[1]
+            self.arealist[pPlayer.col + 3][pPlayer.row + 0] = pSetArea[2]
+            self.arealist[pPlayer.col + 4][pPlayer.row + 0] = pSetArea[3]
+            self.arealist[pPlayer.col + 5][pPlayer.row + 0] = pSetArea[4]
+            self.arealist[pPlayer.col + 6][pPlayer.row + 0] = pSetArea[5]
+            self.arealist[pPlayer.col + 7][pPlayer.row + 0] = pSetArea[6]
+            self.arealist[pPlayer.col + 8][pPlayer.row + 0] = pSetArea[7]
+            self.arealist[pPlayer.col + 9][pPlayer.row + 0] = pSetArea[8]
+
+        elif pAction == clsAction.SR_RIGHT:
+            """
+            P...プレイヤー
+
+                  P 
+                  0 
+                  1 
+                  2 
+                  3 
+                  4 
+                  5 
+                  6 
+                  7 
+                  8 
+            """
+            self.arealist[pPlayer.col + 0][pPlayer.row + 0] = pSetArea[0]
+            self.arealist[pPlayer.col + 0][pPlayer.row + 1] = pSetArea[1]
+            self.arealist[pPlayer.col + 0][pPlayer.row + 2] = pSetArea[2]
+            self.arealist[pPlayer.col + 0][pPlayer.row + 3] = pSetArea[3]
+            self.arealist[pPlayer.col + 0][pPlayer.row + 4] = pSetArea[4]
+            self.arealist[pPlayer.col + 0][pPlayer.row + 5] = pSetArea[5]
+            self.arealist[pPlayer.col + 0][pPlayer.row + 6] = pSetArea[6]
+            self.arealist[pPlayer.col + 0][pPlayer.row + 7] = pSetArea[7]
+            self.arealist[pPlayer.col + 0][pPlayer.row + 8] = pSetArea[8]
+
+        elif pAction == clsAction.SR_RIGHT:
+            """
+            P...プレイヤー
+                  8 7 6 5 4 3 2 1 0 P
+            """
+            self.arealist[pPlayer.col - 1][pPlayer.row + 0] = pSetArea[0]
+            self.arealist[pPlayer.col - 2][pPlayer.row + 0] = pSetArea[1]
+            self.arealist[pPlayer.col - 3][pPlayer.row + 0] = pSetArea[2]
+            self.arealist[pPlayer.col - 4][pPlayer.row + 0] = pSetArea[3]
+            self.arealist[pPlayer.col - 5][pPlayer.row + 0] = pSetArea[4]
+            self.arealist[pPlayer.col - 6][pPlayer.row + 0] = pSetArea[5]
+            self.arealist[pPlayer.col - 7][pPlayer.row + 0] = pSetArea[6]
+            self.arealist[pPlayer.col - 8][pPlayer.row + 0] = pSetArea[7]
+            self.arealist[pPlayer.col - 9][pPlayer.row + 0] = pSetArea[8]
+
+        elif pAction == clsAction.SR_UP:
+            """
+            P...プレイヤー
+                  
+                  8 
+                  7 
+                  6 
+                  5 
+                  4 
+                  3 
+                  2 
+                  1 
+                  0
+                  P 
+            """
+            self.arealist[pPlayer.col + 0][pPlayer.row + 0] = pSetArea[0]
+            self.arealist[pPlayer.col + 0][pPlayer.row + 1] = pSetArea[1]
+            self.arealist[pPlayer.col + 0][pPlayer.row + 2] = pSetArea[2]
+            self.arealist[pPlayer.col + 0][pPlayer.row + 3] = pSetArea[3]
+            self.arealist[pPlayer.col + 0][pPlayer.row + 4] = pSetArea[4]
+            self.arealist[pPlayer.col + 0][pPlayer.row + 5] = pSetArea[5]
+            self.arealist[pPlayer.col + 0][pPlayer.row + 6] = pSetArea[6]
+            self.arealist[pPlayer.col + 0][pPlayer.row + 7] = pSetArea[7]
+            self.arealist[pPlayer.col + 0][pPlayer.row + 8] = pSetArea[8]
+
         """
         col = 0
         row = 0
@@ -1035,6 +1250,8 @@ class clsAreaTable:
                     row = 0
             else:
                 break
+        """
+        
         return
     
     def PrintArea(self,pPlayerData:clsPlayerData,pEnemyPlayerData:clsPlayerData,pMode:clsAction):
@@ -1053,7 +1270,27 @@ class clsAreaTable:
             print("周辺マップ")
         print(f"{clsEtcValue.PRINT_LINE_NOMAL}") 
 
-        for row in self.arealist:
+
+
+        ShowAreaList = [
+            [
+                self.arealist[pPlayerData.col - 1][pPlayerData.row - 1],
+                self.arealist[pPlayerData.col - 0][pPlayerData.row - 1],
+                self.arealist[pPlayerData.col + 1][pPlayerData.row - 1]
+            ],
+            [
+                self.arealist[pPlayerData.col - 1][pPlayerData.row - 0],
+                self.arealist[pPlayerData.col - 0][pPlayerData.row - 0],
+                self.arealist[pPlayerData.col + 1][pPlayerData.row - 0]
+            ],
+            [
+                self.arealist[pPlayerData.col - 1][pPlayerData.row + 1],
+                self.arealist[pPlayerData.col - 0][pPlayerData.row + 1],
+                self.arealist[pPlayerData.col + 1][pPlayerData.row + 1]
+            ]
+        ]
+
+        for row in ShowAreaList:
             for field in row:
 
                 # 地図の表示モードによってプレイヤーの位置の表示方法を設定する
@@ -1155,8 +1392,8 @@ def main():
 
 
     # 地図関連の管理（本当はGameMasterに管理してほしい...）
-    AreaTable = clsAreaTable(3,3)
-    AreaTableEx = clsAreaTalbeEx(101,PlayerData)
+    #AreaTable = clsAreaTable(3,3)
+    AreaTable = clsAreaTalbeEx(101,PlayerData)
 
     # メイン処理
     BefInpVal = None
@@ -1172,7 +1409,7 @@ def main():
         #print(f"{PlayerData.PlayerColor}{clsEtcValue.PRINT_LINE_ASTA}{RE}") 
 
         # 周辺の情報を表示
-        AreaTable.UpdateAreaList(GetReadyValue,clsAction.AC_GETREADY)
+        AreaTable.UpdateAreaList(GetReadyValue,PlayerData,clsAction.AC_GETREADY)
         AreaTable.PrintArea(PlayerData,EnemyPlayerData,clsAction.AC_BEFOR)
 
         # その他ステータスの表示
@@ -1203,6 +1440,7 @@ def main():
                     InpVal = BefInpVal
 
             #移動先がブロックかどうかの判定
+            #print(f"GetReadyValue={GetReadyValue}")
             if InpVal == MV_L:
                 ActionResult = PlayerData.DoActionPlayerTest(clsAction.MV_LEFT,GetReadyValue)
             elif InpVal == MV_R:
@@ -1363,7 +1601,7 @@ def main():
                 break
 
         #周辺の情報を表示
-        AreaTable.UpdateAreaList(ActionResult.FieldList,PlayerData.NowAction)
+        AreaTable.UpdateAreaList(ActionResult.FieldList,PlayerData,PlayerData.NowAction)
         AreaTable.PrintArea(PlayerData,EnemyPlayerData,clsAction.AC_AFTER)
 
         # その他ステータスの表示
