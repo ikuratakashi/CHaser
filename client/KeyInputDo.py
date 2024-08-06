@@ -13,8 +13,14 @@ import random
 import copy
 from enum import Enum
 import time
+
+"""
+# Beep音を鳴らす場合は以下を有効にするのと、ソースでコメントを外す
+#  Macだとうまくいかないのでコメント化
+#  '# beep' でソース内を検索するとコメントを外す場所が出てくる
 import numpy as np # type: ignore
 import sounddevice as sd # type: ignore
+"""
 
 """""
  # 起動方法
@@ -132,6 +138,8 @@ def signal_handler(sig, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
+'''
+# beep
 class clsBeep:
     """
     beep音のクラス
@@ -193,7 +201,7 @@ class clsBeep:
         if pIsWait:
             sd.wait()
             time.sleep(0.3)
-            
+'''       
 
 class clsSystemAdministrator:
     """
@@ -201,12 +209,15 @@ class clsSystemAdministrator:
     """    
     Version = "FG204 2nd EDITION Ver2.31"
 
+    '''
+    # beep
     def StartupSound(self):
         """
         起動音のようなものを鳴らす
         """
         sound = clsBeep().CreateSound(clsBeep.SE_PIPO)
         clsBeep().SoundStart(sound,True)
+    '''
 
     def TitleShow(self) :
         """
@@ -301,12 +312,17 @@ class clsSystemAdministrator:
                     ,self.clsInitList("Amadeus.Makise","Connect",f"{G}OK{RE}")
                    ]
     
+        """"
+        # beep
         #se_ok = clsBeep().CreateSound(clsBeep.SE_OK)
         #se_ng = clsBeep().CreateSound(clsBeep.SE_NG)
+        """
 
         for InitItem in InitList:
             InitItem.Run()
+
             """
+            # beep
             if "OK" in InitItem.Result :
                 clsBeep().SoundStart(se_ok)
             else:
@@ -487,7 +503,7 @@ class clsWepons:
         """
         return self.Wepons[pType]
     
-    def GetWepons(self) -> list[clsWepon]:
+    def GetWepons(self) -> list:
         """
         武器をリストにして返す
         """
