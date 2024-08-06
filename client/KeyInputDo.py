@@ -282,14 +282,13 @@ class clsSystemAdministrator:
         InitList = [ 
                      self.clsInitList("MEMORY-VMS","Check",f"{G}OK{RE}")
                     ,self.clsInitList("MEMORY-RSS","Check",f"{G}OK{RE}")
-                    ,self.clsInitList("BIOS","Loading",f"{G}OK{RE}")
-                    ,self.clsInitList("ASURA","Loading",f"{G}OK{RE}")
                     ,self.clsInitList("BABEL","Loading",f"{G}OK{RE}")
                     ,self.clsInitList("L.O.S","Loading",f"{R}NG{RE} [Update To HOS]")
                     ,self.clsInitList("HOS","DownLoading",f"{G}OK{RE}")
                     ,self.clsInitList("HOS System","Updateing",f"{G}OK{RE} [L.O.S -> HOS(ver.shige)]")
                     ,self.clsInitList("HOS System","Loading",f"{G}OK{RE}")
-                    ,self.clsInitList("ISO27001","Check",f"{G}OK{RE}")
+                    ,self.clsInitList("ALPHA A7M2","Connect",f"{G}OK{RE}")
+                    ,self.clsInitList("MAGI System","Connect",f"{G}OK{RE}")
                    ]
     
         #se_ok = clsBeep().CreateSound(clsBeep.SE_OK)
@@ -308,6 +307,7 @@ class clsSystemAdministrator:
         print()
         print()
         self.PrintTextDelay("Wellcome To CHaser Game.",0.007)
+        print()
         print()
         print()
 
@@ -1094,7 +1094,7 @@ def main():
     # プログラムを管理するクラスの使用
     Administrator = clsSystemAdministrator()
     # 起動音を鳴らす
-    Administrator.StartupSound()
+    #Administrator.StartupSound()
     # タイトルの表示
     Administrator.TitleShow()
 
