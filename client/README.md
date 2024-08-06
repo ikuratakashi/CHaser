@@ -6,6 +6,18 @@
 run.sh がクライアントの起動シェルです。
 ホストの設定に合わせて修正してください。
 
+## 自分の環境での動かし方
+
+COOLで起動する場合
+```sh
+python3.12 KeyInputDo.py -c c
+```
+
+HOTで起動する場合
+```sh
+python3.12 KeyInputDo.py -c h
+```
+
 ## シェルの実行方法
 
 COOLで起動する場合
