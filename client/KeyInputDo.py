@@ -13,8 +13,8 @@ import random
 import copy
 from enum import Enum
 import time
-import numpy as np # type: ignore
-import sounddevice as sd # type: ignore
+#import numpy as np # type: ignore
+#import sounddevice as sd # type: ignore
 
 """""
  # 起動方法
@@ -121,6 +121,7 @@ class clsAction:
     AC_SEARCH = "SEARCH"
     AC_LOOK   = "LOOK"
     AC_WEPON  = "WEPON"
+    AC_GETREADY = "AC_GETREADY"
 
 def signal_handler(sig, frame):
     """
@@ -291,7 +292,7 @@ class clsSystemAdministrator:
                      self.clsInitList("Divergence","Check",f"{G}OK{RE}")
                     ,self.clsInitList("MEMORY-VMS","Check",f"{G}OK{RE}")
                     ,self.clsInitList("MEMORY-RSS","Check",f"{G}OK{RE}")
-                    ,self.clsInitList("BABEL","Loading",f"{G}OK{RE}")
+                    ,self.clsInitList("ASURA","Loading",f"{G}OK{RE}")
                     #,self.clsInitList("L.O.S","Loading",f"{R}NG{RE} [Update To HOS]")
                     #,self.clsInitList("HOS","DownLoading",f"{G}OK{RE}")
                     #,self.clsInitList("HOS System","Updateing",f"{G}OK{RE} [L.O.S -> HOS(ver.shige)]")
@@ -582,6 +583,8 @@ class clsPlayerData:
     #Client
     Client:CHaser.Client = None
 
+    # 実行したアクション
+    NowAction:clsAction = clsAction.AC_GETREADY
 
     def __init__(self,pCool_Hot:int,pClient:CHaser.Client):
         """
@@ -724,6 +727,7 @@ class clsPlayerData:
         result.Action = pAction 
         Dr = self.direction
         LDr = self.LookDirection
+        self.NowAction = pAction
 
         #履歴を残す(後で何かにつかう)
         self.logColRow.append(clslogRowCol(pAction,pAreaList,self.col,self.row))
@@ -981,6 +985,8 @@ class clsAreaTable:
         """    
         self.cols = pCols
         self.rows = pRows
+        self.arealist = []    
+        self.arealist = [[None for _ in range(self.cols)] for _ in range(self.rows)]
         return
     
     def AddAreaList(self,pArea:list):
@@ -989,12 +995,10 @@ class clsAreaTable:
         """
         return
     
-    def SetAreaList(self,pArea:list):
+    def UpdateAreaList(self,pArea:list,pAction:clsAction):
         """
         周辺の情報を設定する
         """
-        self.arealist = []    
-        self.arealist = [[None for _ in range(self.cols)] for _ in range(self.rows)]
         col = 0
         row = 0
         for field in pArea:
@@ -1091,13 +1095,14 @@ class clsAreaTalbeEx(clsAreaTable):
         self.arealist = [[None for _ in range(self.cols)] for _ in range(self.rows)]
         self.player.setPosition(math.ceil(self.cols / 2) - 1,math.ceil(self.rows / 2) - 1)
 
-    def addArea(self,pArea:list,pAction:int):
+    def UpdateArea(self,pArea:list,pAction:clsAction):
         """
-        周辺情報の追加
+        周辺情報の更新
         Args:
             pArea (list): 追加する周辺情報
             pAction (int): 周辺情報を取得した時の動作
-        """    
+        """
+        
 
 def main():
     
@@ -1107,8 +1112,6 @@ def main():
     #Administrator.StartupSound()
     # タイトルの表示
     Administrator.TitleShow()
-
-    return
 
     value = [] # フィールド情報を保存するリスト
     client = CHaser.Client() # サーバーと通信するためのインスタンス
@@ -1144,7 +1147,7 @@ def main():
         #print(f"{PlayerData.PlayerColor}{clsEtcValue.PRINT_LINE_ASTA}{RE}") 
 
         # 周辺の情報を表示
-        AreaTable.SetAreaList(GetReadyValue)
+        AreaTable.UpdateAreaList(GetReadyValue,clsAction.AC_GETREADY)
         AreaTable.PrintArea(PlayerData,EnemyPlayerData,clsAction.AC_BEFOR)
 
         # その他ステータスの表示
@@ -1335,7 +1338,7 @@ def main():
                 break
 
         #周辺の情報を表示
-        AreaTable.SetAreaList(ActionResult.FieldList)
+        AreaTable.UpdateAreaList(ActionResult.FieldList,PlayerData.NowAction)
         AreaTable.PrintArea(PlayerData,EnemyPlayerData,clsAction.AC_AFTER)
 
         # その他ステータスの表示
