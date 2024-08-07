@@ -64,6 +64,11 @@ ENM = 1 #敵
 BLC = 2 #ブロック
 ITM = 3 #アイテム
 
+# 定数 EYEを使った時の表示範囲
+SET_EYE_COLS = 29 #必ず偶数（偶数でないと中心が出ない）
+SET_EYE_ROWS = 11 #必ず偶数（偶数でないと中心が出ない）
+
+
 # ANSIエスケープシーケンス
 colorama.init()
 R = Fore.RED
@@ -133,6 +138,7 @@ class clsAction:
     AC_LOOK   = "LOOK"
     AC_WEPON  = "WEPON"
     AC_GETREADY = "AC_GETREADY"
+    AC_WEPON_EYE = "AC_WEPON_EYE"
 
 def signal_handler(sig, frame):
     """
@@ -430,6 +436,10 @@ class clsWepon:
     # 経過したターン数
     TurnCnt = 0
 
+    # EYE用(プレイヤーを中心とした見える範囲)
+    EYE_COLS = SET_EYE_COLS #必ず偶数（偶数でないと中心が出ない）
+    EYE_ROWS = SET_EYE_ROWS #必ず偶数（偶数でないと中心が出ない）
+
     def __init__(self,pType:str,pTypeCommand:str,pName:str,pCnt:int,pIsRand:bool,pUseMaxTurn:int = 0):
         '''
         コンストラクタ
@@ -470,7 +480,7 @@ class clsWepon:
         武器のメニュー表示文字列を作成
         使用中の武器
         '''
-        return f"{self.Name}({self.UseTurn - self.UsedTurnCnt}/{self.UseTurn})"
+        return f"{self.Name}({self.UseMaxTurn - self.TurnCnt}/{self.UseMaxTurn})"
     
     def CleateMenuStr(self,pCommandColor:str):
         '''
@@ -533,9 +543,9 @@ class clsWepon:
         """
         使用している武器が利用可能なターン内か
         """
-        if self.TurnCnt < self.UseMaxTurn:
+        if self.TurnCnt <= self.UseMaxTurn:
             return True
-        else
+        else:
             return False
     
     def SetUseWepon(self):
@@ -578,8 +588,8 @@ class clsWepons:
         """
         使用中の武器を返す
         """
-        result:[clsWepon] = []
-        for wepon in self.Wepons
+        result:list[clsWepon] = []
+        for key,wepon in self.Wepons.items():
             if wepon.IsUsed == True and wepon.IsUseTrun() == True:
                 result.append(wepon)
         return result
@@ -736,7 +746,7 @@ class clsPlayerData:
         # 使用中の武器の一覧を取得
         UseWeponStrList = []
         UseWeponStr = ""
-        for wp:clsWepon in self.Wepons.GetUseWepons():
+        for wp in self.Wepons.GetUseWepons():
             if wp.Type != clsWepon.HELP:
                 UseWeponStrList.append(wp.CleateUseStatusStr())
         UseWeponStr = ' / '.join(UseWeponStrList)
@@ -788,20 +798,17 @@ class clsPlayerData:
             pAction == clsAction.MV_LEFT or
             pAction == clsAction.MV_RIGHT):
 
-            # 移動 #1
-            print(f"pAreaList={pAreaList}")
-
             if pAction == clsAction.MV_UP:
-                if self.IsBlock(pAreaList, int(MV_U)) == True:
+                if self.IsBlock(pAreaList, int(MV_U) - 1) == True:
                     result.Result = enmActionResult.BLOCK
             elif pAction == clsAction.MV_DOWN:
-                if self.IsBlock(pAreaList, int(MV_D)):
+                if self.IsBlock(pAreaList, int(MV_D) - 1):
                     result.Result = enmActionResult.BLOCK
             elif pAction == clsAction.MV_LEFT:
-                if self.IsBlock(pAreaList, int(MV_L)):
+                if self.IsBlock(pAreaList, int(MV_L) - 1):
                     result.Result = enmActionResult.BLOCK
             elif pAction == clsAction.MV_RIGHT:
-                if self.IsBlock(pAreaList, int(MV_R)):
+                if self.IsBlock(pAreaList, int(MV_R) - 1):
                     result.Result = enmActionResult.BLOCK
         
         return result
@@ -973,12 +980,12 @@ class clsGameMaster:
         self.Client = pClient
 
         #武器の追加
-        self.Wepons.AddWepon(clsWepon(clsWepon.BLOCK,clsWepon.COMMAND_BLOCK,"",999,False))
-        self.Wepons.AddWepon(clsWepon(clsWepon.BOM  ,clsWepon.COMMAND_BOM  ,"",1  ,False))
-        self.Wepons.AddWepon(clsWepon(clsWepon.EYE  ,clsWepon.COMMAND_EYE  ,"",5  ,False))
-        option = [clsWepon(clsWepon.BOM  ,clsWepon.COMMAND_RAND,"???"  ,1,True),
-                  clsWepon(clsWepon.CHAFF,clsWepon.COMMAND_RAND,"?????",1,True),
-                  clsWepon(clsWepon.EYE  ,clsWepon.COMMAND_RAND,"???"  ,3,True)]
+        self.Wepons.AddWepon(clsWepon(clsWepon.BLOCK,clsWepon.COMMAND_BLOCK,"",999,False,0))
+        self.Wepons.AddWepon(clsWepon(clsWepon.BOM  ,clsWepon.COMMAND_BOM  ,"",1  ,False,0))
+        self.Wepons.AddWepon(clsWepon(clsWepon.EYE  ,clsWepon.COMMAND_EYE  ,"",5  ,False,10))
+        option = [clsWepon(clsWepon.BOM  ,clsWepon.COMMAND_RAND,"???"  ,1,True,0),
+                  clsWepon(clsWepon.CHAFF,clsWepon.COMMAND_RAND,"?????",1,True,0),
+                  clsWepon(clsWepon.EYE  ,clsWepon.COMMAND_RAND,"???"  ,3,True,10)]
         WeponRandom = random.choice(option)
         self.Wepons.AddWepon(WeponRandom)
         self.Wepons.AddWepon(clsWepon(clsWepon.HELP ,clsWepon.COMMAND_HELP ,"",0,False))
@@ -997,7 +1004,7 @@ class clsGameMaster:
         for selWepon in self.Wepons.GetWepons():
             tmpList.append(selWepon.CleateMenuStr(pCommandColor))
 
-        return f"[Wepon] {' '.join(tmpList)} Cancel:未入力 ..."
+        return f"[Wepon] {' '.join(tmpList)} Cancel:{pCommandColor}未入力{RE} ..."
     
     def CleateWeponHelp(self):
         """
@@ -1069,8 +1076,9 @@ class PrintAreaPutPlayerMode(Enum):
     """
     周辺情報のプレイヤーの表示モード
     """    
-    P_3x3 = 1   #3x3の周辺情報
-    P_REAL = 2  #フィールド全体
+    P_3x3  = 1   #3x3の周辺情報
+    P_REAL = 2   #フィールド全体
+    P_EYE  = 3   #武器のEYE使用中
     
 class clsAreaTable:
     """
@@ -1080,11 +1088,12 @@ class clsAreaTable:
     rows = 0
     arealist = []
     
-    A_PLAYER_ME = 10
-    A_PLAYER_EM = 1
-    A_BLOCK = 2
-    A_ITEM = 3
-    A_NONE = 999
+    A_FIELD = 0         # 空フィールド
+    A_PLAYER_ME = 10    # 自分自身
+    A_PLAYER_EM = 1     # 敵
+    A_BLOCK = 2         # ブロック
+    A_ITEM = 3          # アイテム
+    A_NONE = 999        # 未調査フィールド
 
     #周辺情報のプレイヤーの表示モード
     PrintAreaPutPlayerMode = PrintAreaPutPlayerMode.P_3x3
@@ -1095,11 +1104,8 @@ class clsAreaTable:
         """    
         self.cols = pCols
         self.rows = pRows
-        self.arealist = []    
         self.arealist = [[ self.A_NONE for _ in range(self.cols)] for _ in range(self.rows)]
-        for rows in self.arealist:
-            for field in rows:
-                field
+
         return
     
     def AddAreaList(self,pArea:list):
@@ -1117,7 +1123,12 @@ class clsAreaTable:
             pAction == clsAction.PT_UP or 
             pAction == clsAction.PT_RIGHT or
             pAction == clsAction.PT_DOWN or
-            pAction == clsAction.PT_LEFT):
+            pAction == clsAction.PT_LEFT or
+            pAction == clsAction.MV_UP or
+            pAction == clsAction.MV_RIGHT or
+            pAction == clsAction.MV_DOWN or
+            pAction == clsAction.MV_LEFT
+            ):
             """
             P...プレイヤー
               0 1 2
@@ -1125,7 +1136,7 @@ class clsAreaTable:
               6 7 8
  
               0 1 2 
-              3 P 5 
+              3 P 5
               6 7 8
             """
             self.arealist[pPlayer.col - 1][pPlayer.row - 1] = pSetArea[0]
@@ -1173,22 +1184,22 @@ class clsAreaTable:
             self.arealist[pPlayer.col + 0][pPlayer.row + 3] = pSetArea[7]
             self.arealist[pPlayer.col + 1][pPlayer.row + 3] = pSetArea[8]
 
-        elif pAction == clsAction.LO_DOWN:
+        elif pAction == clsAction.LO_LEFT:
             """
             P...プレイヤー
                 0 1 2
                 3 4 5 P
                 6 7 8
             """
-            self.arealist[pPlayer.col - 3][pPlayer.row + 1] = pSetArea[0]
-            self.arealist[pPlayer.col - 2][pPlayer.row + 0] = pSetArea[1]
+            self.arealist[pPlayer.col - 3][pPlayer.row - 1] = pSetArea[0]
+            self.arealist[pPlayer.col - 2][pPlayer.row - 1] = pSetArea[1]
             self.arealist[pPlayer.col - 1][pPlayer.row - 1] = pSetArea[2]
-            self.arealist[pPlayer.col - 3][pPlayer.row + 1] = pSetArea[3]
+            self.arealist[pPlayer.col - 3][pPlayer.row + 0] = pSetArea[3]
             self.arealist[pPlayer.col - 2][pPlayer.row + 0] = pSetArea[4]
-            self.arealist[pPlayer.col - 1][pPlayer.row - 1] = pSetArea[5]
+            self.arealist[pPlayer.col - 1][pPlayer.row + 0] = pSetArea[5]
             self.arealist[pPlayer.col - 3][pPlayer.row + 1] = pSetArea[6]
-            self.arealist[pPlayer.col - 2][pPlayer.row + 0] = pSetArea[7]
-            self.arealist[pPlayer.col - 1][pPlayer.row - 1] = pSetArea[8]
+            self.arealist[pPlayer.col - 2][pPlayer.row + 1] = pSetArea[7]
+            self.arealist[pPlayer.col - 1][pPlayer.row + 1] = pSetArea[8]
 
         elif pAction == clsAction.LO_UP:
             """
@@ -1223,7 +1234,7 @@ class clsAreaTable:
             self.arealist[pPlayer.col + 8][pPlayer.row + 0] = pSetArea[7]
             self.arealist[pPlayer.col + 9][pPlayer.row + 0] = pSetArea[8]
 
-        elif pAction == clsAction.SR_RIGHT:
+        elif pAction == clsAction.SR_DOWN:
             """
             P...プレイヤー
 
@@ -1248,7 +1259,7 @@ class clsAreaTable:
             self.arealist[pPlayer.col + 0][pPlayer.row + 7] = pSetArea[7]
             self.arealist[pPlayer.col + 0][pPlayer.row + 8] = pSetArea[8]
 
-        elif pAction == clsAction.SR_RIGHT:
+        elif pAction == clsAction.SR_LEFT:
             """
             P...プレイヤー
                   8 7 6 5 4 3 2 1 0 P
@@ -1304,49 +1315,108 @@ class clsAreaTable:
         
         return
     
-    def PrintArea(self,pPlayerData:clsPlayerData,pEnemyPlayerData:clsPlayerData,pMode:clsAction):
+    def PrintArea(self,pPlayerData:clsPlayerData,pEnemyPlayerData:clsPlayerData,pMode:clsAction,pUseWepon:clsWepon = None):
         """
         周辺の状態をコンソールに出力する
+
+        武器の使用時の設定
+            pMode へは、clsAction.AC_WEPON
+            pUseWepon へは、使用する武器の clsActionインスタンス
+
+            例）武器のEYEを使用した状態の周辺の状態をコンソールに出すには
+                PrintArea(PlayerData,EnemyPlayerData,clsAction.AC_WEPON,<clsWeponのインスタンス>)
+
         """
         curCol = 0
         curRow = 0
 
         print(f"{clsEtcValue.PRINT_LINE_NOMAL}") 
         if pMode == clsAction.AC_BEFOR:
-            print("周辺マップ [行動前]")
+            print(f"AreaMap [Action Befor]")
         elif pMode == clsAction.AC_AFTER:
-            print("周辺マップ [行動後]")
+            print(f"AreaMap [Action After]")
+        elif pMode == clsAction.AC_BEFOR and pUseWepon != None and pUseWepon.Type == clsWepon.EYE:
+            print(f"AreaMap [Action Befor / Use:EYE]")
+        elif pMode == clsAction.AC_AFTER and pUseWepon != None and pUseWepon.Type == clsWepon.EYE:
+            print(f"AreaMap [Action After / Use:EYE]")
+        elif pMode == clsAction.AC_WEPON and pUseWepon != None and pUseWepon.Type == clsWepon.EYE:
+            print(f"AreaMap [Action Use Wepon / Use:EYE({pUseWepon.UseMaxTurn - pUseWepon.TurnCnt})]")
         else:
-            print("周辺マップ")
+            print("AreaMap")
         print(f"{clsEtcValue.PRINT_LINE_NOMAL}") 
 
+        ShowAreaList = []
+        if pUseWepon == None :
+            cols = 3
+            rows = 3
 
-
-        ShowAreaList = [
-            [
-                self.arealist[pPlayerData.col - 1][pPlayerData.row - 1],
-                self.arealist[pPlayerData.col - 0][pPlayerData.row - 1],
-                self.arealist[pPlayerData.col + 1][pPlayerData.row - 1]
-            ],
-            [
-                self.arealist[pPlayerData.col - 1][pPlayerData.row - 0],
-                self.arealist[pPlayerData.col - 0][pPlayerData.row - 0],
-                self.arealist[pPlayerData.col + 1][pPlayerData.row - 0]
-            ],
-            [
-                self.arealist[pPlayerData.col - 1][pPlayerData.row + 1],
-                self.arealist[pPlayerData.col - 0][pPlayerData.row + 1],
-                self.arealist[pPlayerData.col + 1][pPlayerData.row + 1]
+            """
+            ShowAreaList = [
+                [
+                    self.arealist[pPlayerData.col - 1][pPlayerData.row - 1],
+                    self.arealist[pPlayerData.col - 0][pPlayerData.row - 1],
+                    self.arealist[pPlayerData.col + 1][pPlayerData.row - 1]
+                ],
+                [
+                    self.arealist[pPlayerData.col - 1][pPlayerData.row - 0],
+                    self.arealist[pPlayerData.col - 0][pPlayerData.row - 0],
+                    self.arealist[pPlayerData.col + 1][pPlayerData.row - 0]
+                ],
+                [
+                    self.arealist[pPlayerData.col - 1][pPlayerData.row + 1],
+                    self.arealist[pPlayerData.col - 0][pPlayerData.row + 1],
+                    self.arealist[pPlayerData.col + 1][pPlayerData.row + 1]
+                
+                ]
             ]
-        ]
+            """
 
-        for row in ShowAreaList:
+        elif pUseWepon.Type == clsWepon.EYE:
+            cols = pUseWepon.EYE_COLS
+            rows = pUseWepon.EYE_ROWS
+        """
+            表示範囲 例
+                cols = 7 (列)
+                rows = 5 (行)
+                C...キャラクター
+
+                    0 1 2 3 4 5 6
+                0 # # # # # # #
+                1 # # # # # # #
+                2 # # # C # # #
+                3 # # # # # # #
+                4 # # # # # # #
+
+                中心位置の出し方 (この計算を成功させるために必ず範囲は、偶数である必要がある)
+                    cols / 2 → 小数点切り上げ → マイナス1
+                    [ 3.5 ]  → [ 4.0 ]       → [ 3.0 ]
+        """
+
+        setRow = -1 * (math.ceil(rows/2) - 1)
+        for row in range(rows):
+            addRowList = []
+            setCol = -1 * (math.ceil(cols/2) - 1)
+            for col in range(cols):
+                selCol = pPlayerData.col + setCol
+                selRow = pPlayerData.row + setRow
+                addRowList.append(copy.deepcopy(self.arealist[selCol][selRow]))
+                setCol += 1
+            ShowAreaList.append(copy.deepcopy(addRowList))
+            setRow += 1
+
+        for row in ShowAreaList: #Rowの数分回る
             for field in row:
 
                 # 地図の表示モードによってプレイヤーの位置の表示方法を設定する
-                if self.PrintAreaPutPlayerMode == PrintAreaPutPlayerMode.P_3x3:
-                    if curCol == 1 and curRow == 1:
+                if pUseWepon != None and pUseWepon.Type == clsWepon.EYE :
+                    cols = pUseWepon.EYE_COLS
+                    rows = pUseWepon.EYE_ROWS
+                    if curCol == (math.ceil(cols/2) - 1) and curRow == (math.ceil(rows/2) - 1):
                         field = self.A_PLAYER_ME
+                else:
+                    if self.PrintAreaPutPlayerMode == PrintAreaPutPlayerMode.P_3x3:
+                        if curCol == 1 and curRow == 1:
+                            field = self.A_PLAYER_ME
 
                 # プレイヤーの表示
                 ## print の end="" は、出力しても改行しない意味
@@ -1369,16 +1439,18 @@ class clsAreaTable:
                 elif field == self.A_PLAYER_EM:
                     #敵の表示
                     print(f"{pEnemyPlayerData.PlayerColor}{pEnemyPlayerData.PlayerMark} {RE}",end="")
-                else:
+                elif field == self.A_FIELD:
                     print(". ",end="")
+                else:
+                    print("? ",end="")
             
-                curRow += 1
+                curCol += 1
 
             #改行
             print()
 
-            curCol += 1
-            curRow = 0
+            curRow += 1
+            curCol = 0
 
 class clsAreaTalbeEx(clsAreaTable):
     """
@@ -1404,7 +1476,7 @@ class clsAreaTalbeEx(clsAreaTable):
         self.cols = pSize
         self.rows = pSize
         self.player = pPlayer
-        self.arealist = [[None for _ in range(self.cols)] for _ in range(self.rows)]
+        self.arealist = [[self.A_NONE for _ in range(self.cols)] for _ in range(self.rows)]
         self.player.setPosition(math.ceil(self.cols / 2) - 1,math.ceil(self.rows / 2) - 1)
 
     def UpdateArea(self,pArea:list,pAction:clsAction):
@@ -1447,11 +1519,16 @@ def main():
 
     # メイン処理
     BefInpVal = None
+    SelWeponEye:clsWepon = None
     while(True):
 
         GameMaster.AddTurn()
 
         GetReadyValue = client.get_ready()
+
+        # 武器：EYEの使用ターンカウントアップと使用停止
+        if SelWeponEye != None:
+            SelWeponEye.TurnCntAdd()
 
         # タイトルの表示
         print(f"{PlayerData.PlayerColor}{clsEtcValue.PRINT_LINE_ASTA}{RE}") 
@@ -1460,7 +1537,7 @@ def main():
 
         # 周辺の情報を表示
         AreaTable.UpdateAreaList(GetReadyValue,PlayerData,clsAction.AC_GETREADY)
-        AreaTable.PrintArea(PlayerData,EnemyPlayerData,clsAction.AC_BEFOR)
+        AreaTable.PrintArea(PlayerData,EnemyPlayerData,clsAction.AC_BEFOR,SelWeponEye)
 
         # その他ステータスの表示
         GameMaster.ShowGameStatus()
@@ -1557,8 +1634,10 @@ def main():
                         continue
                     if InpVal == clsWepon.COMMAND_EYE :
                         # 武器を使用状態にする
-                        selWepon:clsWepon = GameMaster.Wepons.GetWepon(clsWepon.EYE)
-                        selWepon.SetUseWepon()
+                        SelWeponEye = PlayerData.Wepons.GetWepon(clsWepon.EYE)
+                        SelWeponEye.UseWepon()
+                        SelWeponEye.SetUseWepon()
+                        AreaTable.PrintArea(PlayerData,EnemyPlayerData,clsAction.AC_WEPON,SelWeponEye)
                         break
                     if InpVal == clsWepon.COMMAND_RAND :
                         print(f"{R}未実装のため使用できません!{RE}")
@@ -1568,7 +1647,7 @@ def main():
                         break
 
             #ブロックの設置メニュー
-            InputMenu = f"←:{ComColor}{MV_L}{RE} →:{ComColor}{MV_R}{RE} ↑:{ComColor}{MV_U}{RE} ↓:{ComColor}{MV_D}{RE} Cancel:未入力 ..."
+            InputMenu = f"←:{ComColor}{MV_L}{RE} →:{ComColor}{MV_R}{RE} ↑:{ComColor}{MV_U}{RE} ↓:{ComColor}{MV_D}{RE} Cancel:{ComColor}未入力{RE} ..."
             if IsBlockStep == True :
                 while(True):
                     # Helpの表示
@@ -1652,12 +1731,16 @@ def main():
             if IsEndStep == True:
                 break
 
-        #周辺の情報を表示
+        # 周辺の情報を表示
         AreaTable.UpdateAreaList(ActionResult.FieldList,PlayerData,PlayerData.NowAction)
-        AreaTable.PrintArea(PlayerData,EnemyPlayerData,clsAction.AC_AFTER)
+        AreaTable.PrintArea(PlayerData,EnemyPlayerData,clsAction.AC_AFTER,SelWeponEye)
 
         # その他ステータスの表示
         GameMaster.ShowGameStatus()
+
+        # 武器:EYE が使用ターン数を超えたときの処理
+        if SelWeponEye != None and SelWeponEye.IsUseTrun() == False:
+            SelWeponEye = None
 
         #print(f"{EnemyPlayerData.PlayerColor}{clsEtcValue.PRINT_LINE_NOMAL}{RE}") 
         print("")
