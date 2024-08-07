@@ -418,19 +418,19 @@ class clsWepon:
     Type = ""
     TypeCommand = ""
     Name = ""
-    Cnt = 0
+    Cnt = 0  #武器の数
     IsRand = False
 
     # 使用中フラグ
     IsUsed = False
 
     # 使用できるターン数
-    UseTurn = 0
+    UseMaxTurn = 0
 
-    # 使用したターン数
-    UsedTurnCnt = 0
+    # 経過したターン数
+    TurnCnt = 0
 
-    def __init__(self,pType:str,pTypeCommand:str,pName:str,pCnt:int,pIsRand:bool,pUseTurn:int = 0):
+    def __init__(self,pType:str,pTypeCommand:str,pName:str,pCnt:int,pIsRand:bool,pUseMaxTurn:int = 0):
         '''
         コンストラクタ
 
@@ -440,7 +440,7 @@ class clsWepon:
             pName (str): メニューに表示する名称
             pCnt (int): 使用回数
             pIsRand (bool): ランダムアイテムかどうか
-            pUseTurn (int): 使用可能ターン数
+            pUseMaxTurn (int): 使用可能ターン数
 
         '''
         if pName == "":
@@ -456,7 +456,7 @@ class clsWepon:
         self.TypeCommand = pTypeCommand
         self.Cnt = pCnt
         self.IsRand = pIsRand
-        self.UseTurn = pUseTurn
+        self.UseMaxTurn = pUseMaxTurn
     
     def CleateStatusStr(self) -> str:
         '''
@@ -523,12 +523,27 @@ class clsWepon:
         """    
         self.Cnt += pCnt
 
-    def AddUseTruenCnt(self):
+    def TurnCntAdd(self):
         """
-        使用ターン数のカウント
+        ターン経過数のカウント
         """
-        self.UsedTurnCnt += 1
+        self.TurnCnt += 1
 
+    def IsUseTrun(self):
+        """
+        使用している武器が利用可能なターン内か
+        """
+        if self.TurnCnt < self.UseMaxTurn:
+            return True
+        else
+            return False
+    
+    def SetUseWepon(self):
+        """
+        武器を使用状態にする
+        """
+        self.IsUsed = True
+        self.TurnCnt = 0
 
 class clsWepons:
     """
@@ -565,9 +580,16 @@ class clsWepons:
         """
         result:[clsWepon] = []
         for wepon in self.Wepons
-            if wepon.IsUsed == True:
+            if wepon.IsUsed == True and wepon.IsUseTrun() == True:
                 result.append(wepon)
         return result
+
+    def SetUseWepon(self,pType:str):
+        """
+        武器を使用状態にする
+        """
+        self.Wepons[pType].SetUseWepon()
+
 
 class enmActionResult(Enum):
     """
@@ -1534,7 +1556,7 @@ def main():
                         print(f"{R}未実装のため使用できません!{RE}")
                         continue
                     if InpVal == clsWepon.COMMAND_EYE :
-                        print(f"{R}未実装のため使用できません!{RE}")
+
                         continue
                     if InpVal == clsWepon.COMMAND_RAND :
                         print(f"{R}未実装のため使用できません!{RE}")
@@ -1548,29 +1570,29 @@ def main():
             if IsBlockStep == True :
                 while(True):
                     # Helpの表示
-                    print(f"{GameMaster.Wepons.GetWepon(clsWepon.BLOCK).CleateHelpStr()}")
+                    selWepon:clsWepon = GameMaster.Wepons.GetWepon(clsWepon.BLOCK)
+                    print(f"{selWepon.CleateHelpStr()}")
                     # キー入力
                     InpVal = input(f"[Block] {InputMenu}")
                     if InpVal == MV_L :
                         ActionResult = PlayerData.DoActionPlayer(clsAction.PT_LEFT,GetReadyValue)
                         IsEndStep = True
-                        break
                     elif InpVal == MV_R :
                         ActionResult = PlayerData.DoActionPlayer(clsAction.PT_RIGHT,GetReadyValue)
                         IsEndStep = True
-                        break
                     elif InpVal == MV_U :
                         ActionResult = PlayerData.DoActionPlayer(clsAction.PT_UP,GetReadyValue)
                         IsEndStep = True
-                        break
                     elif InpVal == MV_D :
                         ActionResult = PlayerData.DoActionPlayer(clsAction.PT_DOWN,GetReadyValue)
                         IsEndStep = True
-                        break
                     else :
                         IsMoveStep = True
-                        break
 
+                    # 武器を使用状態にする
+                    selWepon.SetUseWepon()
+                    break
+                    
             #Searchメニュー
             if IsSearchStep == True :
                 while(True):
