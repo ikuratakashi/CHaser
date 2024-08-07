@@ -1556,8 +1556,10 @@ def main():
                         print(f"{R}未実装のため使用できません!{RE}")
                         continue
                     if InpVal == clsWepon.COMMAND_EYE :
-
-                        continue
+                        # 武器を使用状態にする
+                        selWepon:clsWepon = GameMaster.Wepons.GetWepon(clsWepon.EYE)
+                        selWepon.SetUseWepon()
+                        break
                     if InpVal == clsWepon.COMMAND_RAND :
                         print(f"{R}未実装のため使用できません!{RE}")
                         continue
