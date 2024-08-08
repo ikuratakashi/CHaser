@@ -1676,6 +1676,7 @@ def main():
                     
             #Searchメニュー
             if IsSearchStep == True :
+
                 while(True):
                     # Helpの表示
                     print(f"{GameMaster.CleateHelpStr(clsAction.AC_SEARCH)}")
@@ -1733,7 +1734,21 @@ def main():
 
         # 周辺の情報を表示
         AreaTable.UpdateAreaList(ActionResult.FieldList,PlayerData,PlayerData.NowAction)
-        AreaTable.PrintArea(PlayerData,EnemyPlayerData,clsAction.AC_AFTER,SelWeponEye)
+
+        if IsSearchStep == True or IsLookStep == True and SelWeponEye == None:
+            # SearchやLookを行った結果を表示する
+            WeponLocalEye = clsWepon(clsWepon.EYE  ,clsWepon.COMMAND_EYE  ,"",5  ,False,10)
+            WeponLocalEye.UseWepon()
+            WeponLocalEye.SetUseWepon()
+            WeponLocalEye.EYE_COLS = 10 * 2 + 1 + 2 #23 ← Searchが10マス×2 + 自分の場所1 + 予備2
+            WeponLocalEye.EYE_ROWS = 10 * 2 + 1 + 2 #23 ← Searchが10マス×2 + 自分の場所1 + 予備2
+            AreaTableLocal = clsAreaTalbeEx(31,PlayerData)
+            AreaTableLocal.UpdateAreaList(GetReadyValue,PlayerData,clsAction.AC_GETREADY)
+            AreaTableLocal.UpdateAreaList(ActionResult.FieldList,PlayerData,PlayerData.NowAction)
+            AreaTableLocal.PrintArea(PlayerData,EnemyPlayerData,clsAction.AC_BEFOR,WeponLocalEye)
+        else:
+            # 通常の方法でマップを表示する
+            AreaTable.PrintArea(PlayerData,EnemyPlayerData,clsAction.AC_AFTER,SelWeponEye)
 
         # その他ステータスの表示
         GameMaster.ShowGameStatus()
