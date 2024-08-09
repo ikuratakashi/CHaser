@@ -65,9 +65,8 @@ BLC = 2 #ブロック
 ITM = 3 #アイテム
 
 # 定数 EYEを使った時の表示範囲
-SET_EYE_COLS = 29 #必ず偶数（偶数でないと中心が出ない）
-SET_EYE_ROWS = 11 #必ず偶数（偶数でないと中心が出ない）
-
+SET_EYE_COLS = 31 #必ず偶数（偶数でないと中心が出ない）
+SET_EYE_ROWS = 27 #必ず偶数（偶数でないと中心が出ない）
 
 # ANSIエスケープシーケンス
 colorama.init()
@@ -239,10 +238,20 @@ class clsSystemAdministrator:
         self.PrintTextDelay(figlet.renderText("CHaser GAME"),0.001)
         print(f"-- {self.Version} --")
         print()
+        input("Please Enter Key ...")
+        print()
         print(f"{B}[System Initialization]{RE}")
 
-        # システム起動
+        # システム初期化
         self.Initialize()
+
+        # 
+        print()
+        print()
+        self.PrintTextDelay("Hello!! CHaser Game.",0.007)
+        print()
+        print()
+        print()
 
     class clsInitList:
         """
@@ -346,12 +355,6 @@ class clsSystemAdministrator:
             """
 
         print(f"<<Result : {G}ALL GREEN{RE}>>")
-        print()
-        print()
-        self.PrintTextDelay("Hello!! CHaser Game.",0.007)
-        print()
-        print()
-        print()
 
     def PrintTextDelay(self,text: str, delay: float = 0.1) -> None:
         """
@@ -1638,6 +1641,7 @@ def main():
                         SelWeponEye.UseWepon()
                         SelWeponEye.SetUseWepon()
                         AreaTable.PrintArea(PlayerData,EnemyPlayerData,clsAction.AC_WEPON,SelWeponEye)
+                        print(f"{clsEtcValue.PRINT_LINE_NOMAL}") 
                         break
                     if InpVal == clsWepon.COMMAND_RAND :
                         print(f"{R}未実装のため使用できません!{RE}")
@@ -1735,7 +1739,7 @@ def main():
         # 周辺の情報を表示
         AreaTable.UpdateAreaList(ActionResult.FieldList,PlayerData,PlayerData.NowAction)
 
-        if IsSearchStep == True or IsLookStep == True and SelWeponEye == None:
+        if (IsSearchStep == True or IsLookStep == True) and SelWeponEye == None:
             # SearchやLookを行った結果を表示する
             WeponLocalEye = clsWepon(clsWepon.EYE  ,clsWepon.COMMAND_EYE  ,"",5  ,False,10)
             WeponLocalEye.UseWepon()
@@ -1745,7 +1749,7 @@ def main():
             AreaTableLocal = clsAreaTalbeEx(31,PlayerData)
             AreaTableLocal.UpdateAreaList(GetReadyValue,PlayerData,clsAction.AC_GETREADY)
             AreaTableLocal.UpdateAreaList(ActionResult.FieldList,PlayerData,PlayerData.NowAction)
-            AreaTableLocal.PrintArea(PlayerData,EnemyPlayerData,clsAction.AC_BEFOR,WeponLocalEye)
+            AreaTableLocal.PrintArea(PlayerData,EnemyPlayerData,clsAction.AC_AFTER,WeponLocalEye)
         else:
             # 通常の方法でマップを表示する
             AreaTable.PrintArea(PlayerData,EnemyPlayerData,clsAction.AC_AFTER,SelWeponEye)
