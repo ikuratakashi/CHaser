@@ -1,0 +1,16 @@
+current directory: C:/source/CHaser/lib/ruby/3.2.0/gems/json-2.7.2/ext/json
+C:/Ruby32-x64/bin/ruby.exe -I C:/Ruby32-x64/lib/ruby/3.2.0 extconf.rb
+creating Makefile
+
+current directory: C:/source/CHaser/lib/ruby/3.2.0/gems/json-2.7.2/ext/json
+make DESTDIR\= sitearchdir\=./.gem.20240730-11256-fwgn4u sitelibdir\=./.gem.20240730-11256-fwgn4u clean
+
+current directory: C:/source/CHaser/lib/ruby/3.2.0/gems/json-2.7.2/ext/json
+make DESTDIR\= sitearchdir\=./.gem.20240730-11256-fwgn4u sitelibdir\=./.gem.20240730-11256-fwgn4u
+make: 'all' に対して行うべき事はありません.
+
+current directory: C:/source/CHaser/lib/ruby/3.2.0/gems/json-2.7.2/ext/json
+make DESTDIR\= sitearchdir\=./.gem.20240730-11256-fwgn4u sitelibdir\=./.gem.20240730-11256-fwgn4u install
+
+current directory: C:/source/CHaser/lib/ruby/3.2.0/gems/json-2.7.2/ext/json
+make DESTDIR\= sitearchdir\=./.gem.20240730-11256-fwgn4u sitelibdir\=./.gem.20240730-11256-fwgn4u clean
