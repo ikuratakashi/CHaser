@@ -96,6 +96,16 @@ http://joetsu.u16procon.org
 ## 資料ダウンロード・リンク集
 http://joetsu.u16procon.org/links
 
+## その他 使用しているVSCodeの拡張機能
+
+- VSCodeで使用している拡張機能
+
+履歴をわかりやすく表示してくれる
+
+```
+mhutchie.git-graph
+```
+
 ## その他
 
 - コミットのコメントの初期値設定
@@ -116,6 +126,7 @@ git config --local user.email "あなたのメールアドレス"
 ```
 
 - wingetとは
+
 windows用のパッケージ管理ツールです。
 ソフトを簡単にインストールするためのツールです。
 
