@@ -31,10 +31,10 @@ import sounddevice as sd # type: ignore
  # 起動方法
 
  ・Cool
-   python KeyInputDo.py -c c
+   python CHaserGame.py -c c
 
  ・Hot
-   python KeyInputDo.py -c h
+   python CHaserGame.py -c h
 
   ※接続情報は、CHaser.pyに記載してあります。探してみてね。
 

@@ -10,12 +10,12 @@ run.sh がクライアントの起動シェルです。
 
 COOLで起動する場合
 ```sh
-python3.12 KeyInputDo.py -c c
+python3.12 CHaserGame.py -c c
 ```
 
 HOTで起動する場合
 ```sh
-python3.12 KeyInputDo.py -c h
+python3.12 CHaserGame.py -c h
 ```
 
 ## シェルの実行方法
@@ -34,10 +34,10 @@ HOTで起動する場合
 
 COOLで起動する場合
 ```sh
- KeyInputDo.py -c c
+ CHaserGame.py -c c
 ```
 
 HOTで起動する場合
 ```sh
- KeyInputDo.py -c h
+ CHaserGame.py -c h
 ```

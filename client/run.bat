@@ -14,10 +14,10 @@ echo プログラム実行中にCtrl+C を押すと、「バッチジョブを�
 REM 引数に応じた動作を実行
 if "%1" == "c" (
     echo COOL Run
-    cmd /C "python KeyInputDo.py -n COOL -p 2009 -h %MY_IP%"
+    cmd /C "python CHaserGame.py -n COOL -p 2009 -h %MY_IP%"
 ) else if "%1" == "h" (
     echo HOT Run
-    cmd /C "python KeyInputDo.py -n HOT -p 2010 -h %MY_IP%"
+    cmd /C "python CHaserGame.py -n HOT -p 2010 -h %MY_IP%"
 ) else (
     echo 引数が設定されていません: %1
     echo 実行方法: %0 {c|h}
