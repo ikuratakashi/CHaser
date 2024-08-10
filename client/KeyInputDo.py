@@ -69,6 +69,10 @@ SET_EYE_COLS = 31 #必ず偶数（偶数でないと中心が出ない）
 SET_EYE_ROWS = 27 #必ず偶数（偶数でないと中心が出ない）
 SET_EYE_TRUEN = 1
 
+#CoolかHotか
+CH_COOL = 0
+CH_HOT = 1
+
 # ANSIエスケープシーケンス
 colorama.init()
 R = Fore.RED
@@ -981,7 +985,7 @@ class clsGameMaster:
 
     # Client
     Client = None
-    
+
     def __init__(self,pClient:CHaser.Client):
         """
         コンストラクタ
@@ -1000,6 +1004,23 @@ class clsGameMaster:
         WeponRandom = random.choice(option)
         self.Wepons.AddWepon(WeponRandom)
         self.Wepons.AddWepon(clsWepon(clsWepon.HELP ,clsWepon.COMMAND_HELP ,"",0,False))
+
+    def ChkCoolHot(self,pIsEnemy:bool = False) -> int :
+        """
+        CoolかHotかを返す
+        """
+        if self.Client.port == 2009:
+            if pIsEnemy == True:
+                result = CH_HOT
+            else:
+                result = CH_COOL
+        else:
+            if pIsEnemy == True:
+                result = CH_COOL
+            else:
+                result = CH_HOT
+
+        return result
 
     def AddTurn(self):
         """
@@ -1528,8 +1549,8 @@ def main():
 
     # ゲームをなんとなく管理するGameMasterの設定
     GameMaster = clsGameMaster(client)
-    GameMaster.Player = clsPlayerData(client.ChkCoolHot(False),client)
-    GameMaster.EnemyPlayer = clsPlayerData(client.ChkCoolHot(True),client)
+    GameMaster.Player = clsPlayerData(GameMaster.ChkCoolHot(False),client)
+    GameMaster.EnemyPlayer = clsPlayerData(GameMaster.ChkCoolHot(True),client)
 
     # プレイヤーにWeponを装備してもらう
     GameMaster.SetWeponPlayer()
@@ -1538,21 +1559,41 @@ def main():
     PlayerData = GameMaster.Player
     EnemyPlayerData = GameMaster.EnemyPlayer
 
-
     # 地図関連の管理（本当はGameMasterに管理してほしい...）
     #AreaTable = clsAreaTable(3,3)
     AreaTable = clsAreaTalbeEx(101,PlayerData)
 
-    # メイン処理
+    # 制御変数の初期化
+
+    ## メイン処理
     BefInpVal = None
     SelWeponEye:clsWepon = None
     IsSearchStep = False
     IsLookStep = False
+    
+    ## コマンドの文字色
+    ComColor = G
+
+    # /////////////////////////////////
+    # メインの処理開始
+    # ////////////////////////////////
     while(True):
 
+        # /////////////////////////////////
+        # 行動前の処理
+        # ////////////////////////////////
+
+        # --------------------------------
+        # GetReady
+        # --------------------------------
+        GetReadyValue = client.get_ready()
+        # --------------------------------
+
+        # ターン数のカウント
         GameMaster.AddTurn()
 
-        GetReadyValue = client.get_ready()
+        # 行動の結果
+        ActionResult = clsActionResult()
 
         # 武器：EYEの使用ターンカウントアップと使用停止
         if SelWeponEye != None:
@@ -1564,8 +1605,10 @@ def main():
         print(f"{PlayerData.PlayerColor}{clsEtcValue.PRINT_LINE_ASTA}{RE}") 
         print(f"{PlayerData.PlayerColor} 自分のターン[Turn:{GameMaster.TurnCnt}]{RE}")
         #print(f"{PlayerData.PlayerColor}{clsEtcValue.PRINT_LINE_ASTA}{RE}") 
-
+        
+        # /////////////////////////////////
         # 周辺の情報を表示
+        # /////////////////////////////////
         AreaTable.UpdateAreaList(GetReadyValue,PlayerData,clsAction.AC_GETREADY)
 
         if (IsSearchStep == True or IsLookStep == True) and SelWeponEye == None:
@@ -1586,12 +1629,9 @@ def main():
         # その他ステータスの表示
         GameMaster.ShowGameStatus()
 
-        # コマンドの文字色
-        ComColor = G
-
-        # 行動の結果
-        ActionResult = clsActionResult()
-
+        # /////////////////////////////////
+        # メニューを表示して行動の実行
+        # /////////////////////////////////
         while(True):
 
             IsMoveStep = True
@@ -1601,6 +1641,9 @@ def main():
             IsSearchStep = False
             IsLookStep = False
 
+            # /////////////////////////////////
+            # 移動メニュー
+            # /////////////////////////////////
             #キー入力
             InputMenu = f"←:{ComColor}{MV_L}{RE} →:{ComColor}{MV_R}{RE} ↑:{ComColor}{MV_U}{RE} ↓:{ComColor}{MV_D}{RE} Serch:{ComColor}{MV_S}{RE} Look:{ComColor}{MV_LOOK}{RE} Wepon:{ComColor}{MV_W}{RE}"
             if BefInpVal == None :
@@ -1660,7 +1703,9 @@ def main():
             if IsInputBefSetValue == True:
                 BefInpVal = InpVal
 
-            #Weponメニュー
+            # /////////////////////////////////
+            # Weponメニュー
+            # ////////////////////////////////
             if IsWeponStep == True :
                 while(True):
                     # Helpの表示
@@ -1691,7 +1736,9 @@ def main():
                         IsMoveStep = True
                         break
 
-            #ブロックの設置メニュー
+            # /////////////////////////////////
+            # ブロックの設置メニュー
+            # ////////////////////////////////
             InputMenu = f"←:{ComColor}{MV_L}{RE} →:{ComColor}{MV_R}{RE} ↑:{ComColor}{MV_U}{RE} ↓:{ComColor}{MV_D}{RE} Cancel:{ComColor}未入力{RE} ..."
             if IsBlockStep == True :
                 while(True):
@@ -1718,8 +1765,10 @@ def main():
                     # 武器を使用状態にする
                     selWepon.SetUseWepon()
                     break
-                    
-            #Searchメニュー
+
+            # /////////////////////////////////
+            # Searchメニュー
+            # ////////////////////////////////
             if IsSearchStep == True :
 
                 while(True):
@@ -1747,7 +1796,9 @@ def main():
                         IsMoveStep = True
                         break
 
+            # /////////////////////////////////
             # Lookメニュー
+            # ////////////////////////////////
             if IsLookStep == True :
                 while(True):
                     # Helpの表示
@@ -1777,9 +1828,12 @@ def main():
             if IsEndStep == True:
                 break
 
+        # /////////////////////////////////
+        # 行動後の動作
+        # ////////////////////////////////
+
         # 周辺の情報を表示
         AreaTable.UpdateAreaList(ActionResult.FieldList,PlayerData,PlayerData.NowAction)
-
         if (IsSearchStep == True or IsLookStep == True) and SelWeponEye == None:
             # SearchやLookを行った結果を表示する
             WeponLocalEye = clsWepon(clsWepon.EYE  ,clsWepon.COMMAND_EYE  ,"",5  ,False,10)
@@ -1796,7 +1850,6 @@ def main():
             #EYEの使用可能確認
             if SelWeponEye != None and SelWeponEye.IsUseTrun() == False:
                 SelWeponEye = None
-
             # 通常の方法でマップを表示する
             AreaTable.PrintArea(PlayerData,EnemyPlayerData,clsAction.AC_AFTER,SelWeponEye)
 

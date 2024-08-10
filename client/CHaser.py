@@ -13,31 +13,7 @@ USER_NAME_C = "COOL"
 USER_NAME_H = "HOT"
 
 class Client:
-
-    #CoolかHotか
-    CH_COOL = 0
-    CH_HOT = 1
-    CoolHot = CH_COOL
-
-    def ChkCoolHot(self,pGetEnemyFlag:bool) -> int:
-        """
-        @bool (bool): 敵側の種類を取得するかどうか
-        """
-        if self.port == "2009":
-            self.CoolHot = self.CH_COOL
-        else:
-            self.CoolHot = self.CH_HOT
-            
-        result = self.CoolHot
-
-        if pGetEnemyFlag == True:
-            if self.CoolHot == self.CH_HOT:
-                result = self.CH_COOL
-            else:
-                result = self.CH_HOT
-
-        return result
-
+    
     def __init__(self):
         if len(sys.argv) > 1:
             try:
