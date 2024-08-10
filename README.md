@@ -108,23 +108,6 @@ mhutchie.git-graph
 
 ## その他
 
-- コミットのコメントの初期値設定
-```sh
-git config commit.template commit_temp.txt
-```
-
-- Emailとユーザ名の設定(全体に有効)
-```sh
-git config --global user.name "あなたの名前"
-git config --global user.email "あなたのメールアドレス"
-```
-
-- Emailとユーザ名の設定(ローカルに有効)
-```sh
-git config --local user.name "あなたの名前"
-git config --local user.email "あなたのメールアドレス"
-```
-
 - wingetとは
 
 windows用のパッケージ管理ツールです。
@@ -169,6 +152,9 @@ winget install Python.Python.3
 winget install  RubyInstallerTeam.Ruby.3.2
 ```
 ## サーバソフトが起動しているけれど、クライアントプログラムで接続できない場合
+
+サーバがローカルPCで動いている場合は、`127.0.0.1` のローカルホストのIPでいいのだけれど、同じLAN内で別PCにサーバを立てようとした場合は、ローカルホストでは都合が悪い。
+
 コマンドラインで以下のコマンドを実行する
 ```
 netstat -ano | findstr :2009
@@ -219,20 +205,3 @@ IPv4アドレスとして表示されているIPが対象のIPアドレス（192
 ```
 netstat -ano | findstr 192.168.3.16
 ```
-
-## GITで管理しないファイルを設定する
-`.gitgnore` ファイルを作成し、そこに記載された拡張子やフォルダ内がすべて同期されなくなる。
-
-.gitgnore 例）
-```
-# 除外するフォルダ内を全て指定
-## 
-__pycache__/
-```
-
-これを行った後に、キャッシュからすでに存在する情報を削除するためのコマンド
-```
-git rm --cashed *.log
-git rm --cashed *.pyc
-```
-実行が終わったらcommitをしてください
