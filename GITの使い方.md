@@ -31,8 +31,8 @@ __pycache__/
 
 これを行った後に、キャッシュからすでに存在する情報を削除するためのコマンド
 ```
-git rm --cashed *.log
-git rm --cashed *.pyc
+git rm --cached *.log
+git rm --cached *.pyc
 ```
 実行が終わったらcommitをしてください
 
