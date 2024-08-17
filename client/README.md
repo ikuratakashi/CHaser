@@ -1,3 +1,9 @@
+# ※当プログラムは、別リポジトリとして独立させました。
+
+以下のリポジトリを参照してください。
+
+https://github.com/ikuratakashi/CHaserGame
+
 # CHaser client library - Python3
 
 試合中にキー入力を求めて、それに応じて動作するようにしたプログラムです。
